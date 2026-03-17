@@ -232,11 +232,11 @@ MonoBehaviour:
   _hasAbilityDuration: 0
   _abilityDuration: 0
   _delayedIndividualTargetZoneRemovalTime: 0
-  _hasScreenShake: 0
+  _hasScreenShake: 1
   _screenShakeData:
-    Intensity: 0
-    Frequency: 0
-    Duration: 0
+    Intensity: 0.6
+    Frequency: 0.005
+    Duration: 0.6
   _animationTriggerName: StaticChargeUsed
   _abilityPrepAudioDelay: 0
   _abilityStartAudioDelay: 0
@@ -265,11 +265,11 @@ MonoBehaviour:
   _hasAbilityDuration: 0
   _abilityDuration: 0
   _delayedIndividualTargetZoneRemovalTime: 0
-  _hasScreenShake: 0
+  _hasScreenShake: 1
   _screenShakeData:
-    Intensity: 0
-    Frequency: 0
-    Duration: 0
+    Intensity: 1.5
+    Frequency: 0.005
+    Duration: 0.6
   _animationTriggerName: ThunderclapUsed
   _abilityPrepAudioDelay: 0
   _abilityStartAudioDelay: 0
@@ -300,11 +300,11 @@ MonoBehaviour:
   _hasAbilityDuration: 0
   _abilityDuration: 0
   _delayedIndividualTargetZoneRemovalTime: 0
-  _hasScreenShake: 0
+  _hasScreenShake: 1
   _screenShakeData:
-    Intensity: 0
-    Frequency: 0
-    Duration: 0
+    Intensity: 0.8
+    Frequency: 0.005
+    Duration: 0.6
   _animationTriggerName: OverchargeUsed
   _abilityPrepAudioDelay: 0
   _abilityStartAudioDelay: 0
@@ -341,13 +341,13 @@ MonoBehaviour:
   _animationTriggerName: 
   _abilityPrepAudioDelay: 0
   _abilityStartAudioDelay: 0
-  _baseRotationSpeed: 3
+  _baseRotationSpeed: 3.25
   _difficultyRotationMultiplier:
   - 1
   - 1
   - 1
   - 1
-  _maxBossHealthRotationMultiplier: 1.2
+  _maxBossHealthRotationMultiplier: 1.25
   _bossHealthRotationMultiplierCurve:
     serializedVersion: 2
     m_Curve:
