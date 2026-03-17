@@ -386,6 +386,22 @@ public class BossStats : BossChildrenFunctionality
         AudioManager.Instance.PlaySpecificAudio(AudioManager.Instance.GeneralBossAudio.HealthStaggerAudio.BossTookDamage);
     }
 
+    public void DealDamageToBossDetailed(MeterEventDetails details)
+    {
+        // Stop if the boss is already dead
+        if (_isBossDead)
+        {
+            return;
+        }
+
+        details.amount /= _bossDamageResistanceMultiplier;
+        _currentHealth -= details.amount;
+        _myBossBase.InvokeBossDamagedEvent(details.amount);
+        _myBossBase.InvokeBossDamagedEventDetailed(details);
+
+        AudioManager.Instance.PlaySpecificAudio(AudioManager.Instance.GeneralBossAudio.HealthStaggerAudio.BossTookDamage);
+    }
+
     public void DealStaggerToBoss(float stagger)
     {
         // Stop if the boss is already dead or staggered
