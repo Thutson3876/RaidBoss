@@ -1,6 +1,7 @@
+using Cinemachine.Utility;
+using FMOD.Studio;
 using System.Collections;
 using System.Collections.Generic;
-using FMOD.Studio;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
@@ -321,7 +322,16 @@ public abstract class SpecificHeroFramework : MonoBehaviour
     {
         damage *= _myHeroBase.GetHeroStats().GetCurrentDamageMultiplier();
 
-        BossStats.Instance.DealDamageToBoss(damage);
+        var heroSO = _myHeroBase.GetHeroSO();
+
+        MeterEventDetails details = new()
+        {
+            dealerName = heroSO.GetHeroName(),
+            amount = damage,
+            dealerColor = heroSO.GetHeroUIColor(),
+        };
+
+        BossStats.Instance.DealDamageToBossDetailed(details);
 
         _myHeroBase.InvokeHeroDealtDamageEvent(damage);
     }
