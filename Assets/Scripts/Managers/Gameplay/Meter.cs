@@ -21,6 +21,11 @@ public class Meter : MonoBehaviour
         _valueText.text = val.ToString($"F{decimalPlaces}");
     }
 
+    public void SetValueText(string text)
+    {
+        _valueText.text = text;
+    }
+
     public void SetBarFill(float fill)
     {
         _bar.fillAmount = fill;
