@@ -18,15 +18,15 @@ MonoBehaviour:
     Lord'
   _bossID: 0
   _bossMusicID: 2
-  _maxHP: 300
+  _maxHP: 350
   _baseStaggerMax: 75
   _staggerDuration: 13
   _rotationSpeed: 4
   _damageIncrementMultiplier: 1.05
-  _damageResistanceChangeOnStagger: 0.15
+  _damageResistanceChangeOnStagger: 0.25
   _fightStartDelay: 1.5
-  _enrageTime: 150
-  _enrageDamageMultiplier: 1.5
+  _enrageTime: 180
+  _enrageDamageMultiplier: 2
   _enrageScalingDamageMultiplierIncreasePerMinute: 0.8
   _bossPrefab: {fileID: 7107661797792204574, guid: 60af20eb747065c438b9c82d3b46c59e, type: 3}
   _bossIcon: {fileID: 21300000, guid: 21d4b6b1ff7b4a44e98295360c31c422, type: 3}
