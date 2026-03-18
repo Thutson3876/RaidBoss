@@ -344,9 +344,20 @@ public abstract class SpecificHeroFramework : MonoBehaviour
     {
         stagger *= _myHeroBase.GetHeroStats().GetCurrentStaggerMultiplier();
 
+        var heroSO = _myHeroBase.GetHeroSO();
+
+        MeterEventDetails details = new()
+        {
+            dealerName = heroSO.GetHeroName(),
+            amount = stagger,
+            dealerColor = heroSO.GetHeroUIColor(),
+        };
+
         BossStats.Instance.DealStaggerToBoss(stagger);
+        BossStats.Instance.DealStaggerToBossDetailed(details);
 
         _myHeroBase.InvokeHeroDealtStaggerEvent(stagger);
+        
     }
 
     /// <summary>
@@ -356,7 +367,22 @@ public abstract class SpecificHeroFramework : MonoBehaviour
     /// <param name="target"></param>
     public virtual void HealTargetHero(float healing, HeroBase target)
     {
+        HeroSO so = _myHeroBase.GetHeroSO();
         healing *= _myHeroBase.GetHeroStats().GetCurrentHealingDealtMultiplier();
+
+        HeroStats targetStats = target.GetHeroStats();
+
+        float actualHealAmount = Mathf.Min(healing, targetStats.GetMaxHealth() - targetStats.GetCurrentHealth());
+
+        MeterEventDetails details = new()
+        {
+            dealerName = so.GetHeroName(),
+            amount = actualHealAmount,
+            dealerColor = so.GetHeroUIColor()
+        };
+
+        HeroesManager.Instance.InvokeOnHeroHealedEventDetailed(details);
+
         target.GetHeroStats().HealHero(healing);
     }
 

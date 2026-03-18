@@ -25,6 +25,7 @@ public class BossBase : MonoBehaviour
     private UnityEvent<float> _bossDamagedEvent = new UnityEvent<float>();
     private UnityEvent<MeterEventDetails> _bossDamagedEventDetailed = new();
     private UnityEvent<float> _bossStaggerDealtEvent = new UnityEvent<float>();
+    private UnityEvent<MeterEventDetails> _bossStaggerDealtEventDetailed = new();
 
     protected UnityEvent _bossAbilityUsedEvent = new UnityEvent();
 
@@ -135,6 +136,10 @@ public class BossBase : MonoBehaviour
     {
         _bossStaggerDealtEvent?.Invoke(stagger);
     }
+    public void InvokeBossStaggerDealtEventDetailed(MeterEventDetails details)
+    {
+        _bossStaggerDealtEventDetailed?.Invoke(details);
+    }
 
     public void InvokeBossAbilityUsedEvent()
     {
@@ -187,6 +192,7 @@ public class BossBase : MonoBehaviour
     public UnityEvent<float> GetBossDamagedEvent() => _bossDamagedEvent;
     public UnityEvent<MeterEventDetails> GetBossDamagedEventDetailed() => _bossDamagedEventDetailed;
     public UnityEvent<float> GetBossStaggerDealtEvent() => _bossStaggerDealtEvent;
+    public UnityEvent<MeterEventDetails> GetBossStaggerDealtEventDetailed() => _bossStaggerDealtEventDetailed;
 
     public UnityEvent GetBossAbilityUsedEvent() => _bossAbilityUsedEvent;
 
