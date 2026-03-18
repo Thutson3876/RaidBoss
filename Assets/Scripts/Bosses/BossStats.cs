@@ -418,6 +418,21 @@ public class BossStats : BossChildrenFunctionality
         CheckIfBossIsStaggered();
     }
 
+    public void DealStaggerToBossDetailed(MeterEventDetails details)
+    {
+        // Stop if the boss is already dead or staggered
+        if (_isBossDead || _isBossStaggered)
+        {
+            return;
+        }
+
+        _currentStaggerCounter += details.amount;
+        _myBossBase.InvokeBossStaggerDealt(details.amount);
+        _myBossBase.InvokeBossStaggerDealtEventDetailed(details);
+
+        CheckIfBossIsStaggered();
+    }
+
     public void MultiplyBossDamageMultiplier(float amount)
     {
         _baseBossDamageMultiplier *= amount;

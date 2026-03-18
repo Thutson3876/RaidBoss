@@ -23,6 +23,7 @@ public class HeroesManager : MainGameplayManagerFramework
     
     private UnityEvent<HeroBase> _onHeroDamagedEvent = new UnityEvent<HeroBase>();
     private UnityEvent<HeroBase> _onHeroHealedEvent = new UnityEvent<HeroBase>();
+    private UnityEvent<MeterEventDetails> _onHeroHealedEventDetailed = new();
     
     private UnityEvent<HeroBase> _onHeroDiedEvent = new UnityEvent<HeroBase>();
 
@@ -165,6 +166,17 @@ public class HeroesManager : MainGameplayManagerFramework
     public void InvokeOnHeroHealedEvent(HeroBase heroBase)
     {
         _onHeroHealedEvent?.Invoke(heroBase);
+    }
+
+
+    public UnityEvent<MeterEventDetails> GetOnHeroHealedEventDetailed()
+    {
+        return _onHeroHealedEventDetailed;
+    }
+
+    public void InvokeOnHeroHealedEventDetailed(MeterEventDetails details)
+    {
+        _onHeroHealedEventDetailed?.Invoke(details);
     }
     
     public void InvokeOnHeroDiedEvent(HeroBase heroBase)

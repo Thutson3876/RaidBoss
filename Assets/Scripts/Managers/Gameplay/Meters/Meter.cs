@@ -9,6 +9,8 @@ public class Meter : MonoBehaviour
     [SerializeField]
     private TMP_Text _valueText;
     [SerializeField]
+    private TMP_Text _valueShadowText;
+    [SerializeField]
     private Image _bar;
 
     public void SetName(string name)
@@ -19,11 +21,13 @@ public class Meter : MonoBehaviour
     public void SetValue(float val, int decimalPlaces = 0)
     {
         _valueText.text = val.ToString($"F{decimalPlaces}");
+        _valueShadowText.text = val.ToString($"F{decimalPlaces}");
     }
 
     public void SetValueText(string text)
     {
         _valueText.text = text;
+        _valueShadowText.text = text;
     }
 
     public void SetBarFill(float fill)
