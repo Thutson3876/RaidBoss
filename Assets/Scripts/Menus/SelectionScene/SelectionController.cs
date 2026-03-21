@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,6 +12,8 @@ public class SelectionController : MonoBehaviour
     
     [Header("Boss")]
     [SerializeField] private BossPillar _bossPillar;
+    
+    [SerializeField] private BossBackgroundChanger _bossBackgroundChanger;
 
     [SerializeField] private List<SelectBossLevelButton> _bossLevelSelectionButtons;
 
@@ -81,6 +85,11 @@ public class SelectionController : MonoBehaviour
     [Header("Hero")]
     [SerializeField] private List<HeroPillar> _heroPillars = new List<HeroPillar>();
 
+    [SerializeField] private AnimationCurve _heroProgressBackgroundCurve;
+    [SerializeField] private GameObject _heroProgressBackground;
+    
+    [SerializeField] private List<MeshRenderer> _heroBackgrounds;
+    
     [SerializeField] private List<SelectHeroButton> _heroSelectionButtons = new List<SelectHeroButton>();
 
     private int _previousMaxHeroes;
@@ -113,7 +122,8 @@ public class SelectionController : MonoBehaviour
         PlayBossSelectedAudio(bossSO);
 
         CheckMaxCharactersSelected();
-
+        
+        ShowBossBackground();
     }
 
     private void BossRemovedSelection(BossSO bossSO)
@@ -121,6 +131,8 @@ public class SelectionController : MonoBehaviour
         _bossPillar.DeselectBossOnPillar();
 
         CheckMaxCharactersNoLongerSelected();
+
+        HideBossBackground();
     }
 
     private void SwapBoss(BossSO previousBoss)
@@ -128,8 +140,11 @@ public class SelectionController : MonoBehaviour
         //Removes the previous boss
         foreach (SelectBossLevelButton bossButton in _bossLevelSelectionButtons)
         {
-            if(bossButton.GetAssociatedBoss() == previousBoss)
-                bossButton.SelectBossLevelLeftClicked();
+            if (bossButton.GetAssociatedBoss() == previousBoss)
+            {
+                //bossButton.SelectBossLevelLeftClicked();
+                bossButton.BossLevelSwapped();
+            }
 
         }
     }
@@ -299,6 +314,16 @@ public class SelectionController : MonoBehaviour
     private void HideFullBossDescription()
     {
         _bossDescription.SetActive(false);
+    }
+
+    private void ShowBossBackground()
+    {
+        _bossBackgroundChanger.UpdateBackground(SelectionManager.Instance.GetSelectedLevel());
+    }
+
+    private void HideBossBackground()
+    {
+        _bossBackgroundChanger.HideCurrentBackground();
     }
 
     #endregion
@@ -771,6 +796,50 @@ public class SelectionController : MonoBehaviour
     private void MoveHeroPillar(int pillarNum, bool moveUp)
     {
         _heroPillars[pillarNum].MovePillar(moveUp);
+    }
+
+    private void Update()
+    {
+        UpdateHeroProgressBackground();
+        //UpdateAllHeroBackgrounds();
+    }
+
+    private void UpdateHeroProgressBackground()
+    {
+        float heroProgress = Mathf.Lerp(0, 18, _heroProgressBackgroundCurve.Evaluate(SelectionManager.Instance.GetHeroSelectionProgress()));
+        
+        _heroProgressBackground.transform.localScale = new Vector3(heroProgress,
+            _heroProgressBackground.transform.localScale.y, _heroProgressBackground.transform.localScale.z);
+    }
+
+    private IEnumerator UpdateHeroProgressBackgroundProcess()
+    {
+        yield return null;
+    }
+
+    private void UpdateAllHeroBackgrounds()
+    {
+        for (int i = 0; i < SelectionManager.Instance.GetMaxHeroesCountWithCurrentDifficulty(); i++)
+        {
+            UpdateHeroBackground(i);
+        }
+    }
+
+    private void UpdateHeroBackground(int backgroundID)
+    {
+        if (SelectionManager.Instance.GetAllSelectedHeroes().Count > backgroundID)
+        {
+            _heroBackgrounds[backgroundID].enabled = true;
+            _heroBackgrounds[backgroundID].material.color = SelectionManager.Instance.GetAllSelectedHeroes()[backgroundID]
+                .GetHeroHighlightedColor();
+
+            _heroBackgrounds[backgroundID].material = SelectionManager.Instance.GetAllSelectedHeroes()[backgroundID]
+                .GetHeroBackgroundMaterial();
+        }
+        else
+        {
+            _heroBackgrounds[backgroundID].enabled = false;
+        }
     }
 
 

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using FMOD.Studio;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
@@ -43,11 +44,12 @@ public class MapController : MonoBehaviour
     
     [Space]
     [Header("Backgrounds")]
-    [SerializeField] private CurveProgression[] _backgroundCurveProgressions;
+    /*[SerializeField] private CurveProgression[] _backgroundCurveProgressions;
     private CurveProgression _currentBackgroundCurveProgression;
     
     [SerializeField] private GeneralVFXFunctionality[] _backgroundParticles;
-    private GeneralVFXFunctionality _currentBackgroundParticles;
+    private GeneralVFXFunctionality _currentBackgroundParticles;*/
+    [SerializeField] private BossBackgroundChanger _bossBackgroundChanger;
 
     [Space]
     [Header("Camera")]
@@ -70,9 +72,28 @@ public class MapController : MonoBehaviour
 
     [Space] 
     [SerializeField] private float _cameraDeccelerationDistance;
+
+    [Space] 
+    [SerializeField] private float _cameraClickAndDragSpeed;
+
+    [Space] 
+    [SerializeField] private float _cameraClickAndDragDurationPreventMissionSelection;
+    [SerializeField] private float _cameraClickAndDragDistancePreventMissionSelection;
+
+    private float _clickAndDragMouseHorizontalStartPosition;
+    private float _clickAndDragMouseLastHorizontalPosition;
+    private float _clickAndDragMouseTotalHorizontalMovement;
+
+    private float _cameraClickAndDragDuration;
+
+    private bool _isClickingAndDraggingCamera = false;
+
+    private Coroutine _cameraClickAndDragCoroutine;
     
     [Space]
     [SerializeField] private GameObject _cameraHolder;
+
+    [SerializeField] private Camera _camera;
 
     [Space] 
     [SerializeField] private float _cameraEdgeDistance;
@@ -100,10 +121,6 @@ public class MapController : MonoBehaviour
         SubscribeToEvents();
         
         SelectionManager.Instance.SetSelectedGameMode(EGameMode.Missions);
-
-        HideAllBackgroundParticles();
-        // REMOVE THIS IF YOU ADD FUNCTIONALITY FOR STARTING ON A DIFFERENT MISSION THAN THE FIRST
-        ShowStartingBackgroundParticles();
 
         CreateMissions();
         SelectStartingMission();
@@ -163,6 +180,13 @@ public class MapController : MonoBehaviour
         {
             return;
         }
+
+        if (_cameraClickAndDragDuration >= _cameraClickAndDragDurationPreventMissionSelection && 
+            Mathf.Abs(_clickAndDragMouseTotalHorizontalMovement) >= _cameraClickAndDragDistancePreventMissionSelection)
+        {
+            return;
+        }
+        
         NewMissionSelected(mission);
     }
 
@@ -179,6 +203,16 @@ public class MapController : MonoBehaviour
         ShowMissionSelectionPopUp();
 
         PlayMissionSelectedAudio(mission);
+    }
+
+    private void UpdateBackground(MissionSO mission)
+    {
+        if (!_previousSelectedMission.IsUnityNull() && mission.GetAssociatedLevel().GetLevelNumber() ==
+            _previousSelectedMission.GetAssociatedMission().GetAssociatedLevel().GetLevelNumber())
+        {
+            return;
+        }
+        _bossBackgroundChanger.UpdateBackground(mission.GetAssociatedLevel());
     }
     
     private void DeselectSelectedMission()
@@ -228,7 +262,7 @@ public class MapController : MonoBehaviour
     
     #region Background
 
-    private void UpdateBackground(MissionSO mission)
+    /*private void UpdateBackground(MissionSO mission)
     {
         if (!_previousSelectedMission.IsUnityNull() && mission.GetAssociatedLevel().GetLevelNumber() ==
             _previousSelectedMission.GetAssociatedMission().GetAssociatedLevel().GetLevelNumber())
@@ -290,7 +324,7 @@ public class MapController : MonoBehaviour
     private void ShowStartingBackgroundParticles()
     {
         ShowBackgroundParticles(SaveManager.Instance.GetMissionsInGame()[0]);
-    }
+    }*/
     
     #endregion
     
@@ -306,6 +340,59 @@ public class MapController : MonoBehaviour
         {
             SetCameraLocation(_minimumCameraLocation);
         }
+    }
+
+    private void ClickAndDragCameraStarted()
+    {
+        ClickAndDragCameraEnded();
+
+        _cameraClickAndDragDuration = 0;
+        _clickAndDragMouseTotalHorizontalMovement = 0;
+        
+        _clickAndDragMouseHorizontalStartPosition = Input.mousePosition.x;
+        _clickAndDragMouseLastHorizontalPosition = _clickAndDragMouseHorizontalStartPosition;
+
+        _isClickingAndDraggingCamera = true;
+        
+        _cameraClickAndDragCoroutine = StartCoroutine(ClickAndDragCameraProcess());
+    }
+
+    private void ClickAndDragCameraEnded()
+    {
+        if (!_cameraClickAndDragCoroutine.IsUnityNull())
+        {
+            StopCoroutine(_cameraClickAndDragCoroutine);
+
+            _isClickingAndDraggingCamera = false;
+        }
+    }
+
+    private IEnumerator ClickAndDragCameraProcess()
+    {
+        while (true)
+        {
+            _cameraClickAndDragDuration += Time.deltaTime;
+            
+            ClickAndDragCamera();
+            yield return null;
+        }
+    }
+
+    private void ClickAndDragCamera()
+    {
+        float moveAmount = ((_clickAndDragMouseLastHorizontalPosition - Input.mousePosition.x) *
+                           _cameraClickAndDragSpeed) / _camera.pixelWidth;
+        
+        _clickAndDragMouseTotalHorizontalMovement += moveAmount;
+        
+        if (Mathf.Abs(moveAmount) > 0)
+        {
+            StopAndResetCameraMoveProcess();
+            IncreaseCameraLocation(moveAmount);
+        }
+        
+        
+        _clickAndDragMouseLastHorizontalPosition = Input.mousePosition.x;
     }
     
     public void CameraLeftButton()
@@ -327,6 +414,11 @@ public class MapController : MonoBehaviour
 
     private void MoveCameraToTarget(float xLocation)
     {
+        if (_isClickingAndDraggingCamera)
+        {
+            return;
+        }
+        
         StopCameraMoveProcess();
         
         xLocation = ClampLocationWithinLimits(xLocation);
@@ -360,6 +452,13 @@ public class MapController : MonoBehaviour
         {
             StopCoroutine(_cameraMovementCoroutine);
         }
+    }
+
+    private void StopAndResetCameraMoveProcess()
+    {
+        StopCameraMoveProcess();
+        _cameraVelocity = 0;
+        _cameraAccelerationProgress = 0;
     }
 
     private void IncreaseCameraLocation(float xIncrease)
@@ -456,19 +555,49 @@ public class MapController : MonoBehaviour
     }
     
     #endregion
-   
-    #region General
-    public void BackToMainMenu()
-    {
-        SceneLoadManager.Instance.LoadMainMenuScene();
-    }
-    #endregion
     
     #region InputActions
+    private void PlayerLeftClickStarted(InputAction.CallbackContext context)
+    {
+        ClickAndDragCameraStarted();
+    }
+
+    private void PlayerLeftClickEnded(InputAction.CallbackContext context)
+    {
+        ClickAndDragCameraEnded();
+    }
 
     private void PlayerRightClicked(InputAction.CallbackContext context)
     {
         DeselectSelectedMission();
+    }
+    
+    private void MouseScroll(InputAction.CallbackContext context)
+    {
+        int storedDirection = (int)context.ReadValue<float>();
+        
+        if (storedDirection > 0)
+        {
+            CameraRightButton();
+        }
+        else if (storedDirection < 0)
+        {
+            CameraLeftButton();
+        }
+    }
+    
+    private void DirectionalButtonClicked(InputAction.CallbackContext context)
+    {
+        int direction = (int)context.ReadValue<float>();
+
+        if (direction > 0)
+        {
+            CameraRightButton();
+        }
+        else if (direction < 0)
+        {
+            CameraLeftButton();
+        }
     }
 
     private void PlayerEscapePressed(InputAction.CallbackContext context)
@@ -481,7 +610,15 @@ public class MapController : MonoBehaviour
         _universalPlayerInputActions = new UniversalPlayerInputActions();
         _universalPlayerInputActions.GameplayActions.Enable();
         
+        _universalPlayerInputActions.GameplayActions.SelectClick.started += PlayerLeftClickStarted;
+        _universalPlayerInputActions.GameplayActions.SelectClick.canceled += PlayerLeftClickEnded;
+        
         _universalPlayerInputActions.GameplayActions.DirectClick.started += PlayerRightClicked;
+        
+        _universalPlayerInputActions.GameplayActions.MouseScroll.performed += MouseScroll;
+        
+        _universalPlayerInputActions.GameplayActions.UIDirections.started += DirectionalButtonClicked;
+        
         _universalPlayerInputActions.GameplayActions.EscapePress.started += PlayerEscapePressed;
 
         _isSubscribedToInput = true;
@@ -490,8 +627,16 @@ public class MapController : MonoBehaviour
     private void UnsubscribeToPlayerInput()
     {
         if (!_isSubscribedToInput) return;
+
+        _universalPlayerInputActions.GameplayActions.SelectClick.started -= PlayerLeftClickStarted;
+        _universalPlayerInputActions.GameplayActions.SelectClick.canceled -= PlayerLeftClickEnded;
         
         _universalPlayerInputActions.GameplayActions.DirectClick.started -= PlayerRightClicked;
+        
+        _universalPlayerInputActions.GameplayActions.MouseScroll.performed += MouseScroll;
+        
+        _universalPlayerInputActions.GameplayActions.UIDirections.started -= DirectionalButtonClicked;
+        
         _universalPlayerInputActions.GameplayActions.EscapePress.started -= PlayerEscapePressed;
         
         _universalPlayerInputActions.GameplayActions.Disable();

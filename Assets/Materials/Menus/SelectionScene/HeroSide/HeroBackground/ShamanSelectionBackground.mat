@@ -7,16 +7,14 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: BlizzardGlow 1
-  m_Shader: {fileID: 4800000, guid: 9ae8f489f636c6e41b65a5ed4a974b30, type: 3}
+  m_Name: ShamanSelectionBackground
+  m_Shader: {fileID: 4800000, guid: 541be47985d5e3f4c9d1306ed72c5a40, type: 3}
   m_ValidKeywords:
+  - _GRADIENT_ON
   - _HEIGHTFOG_ON
   m_InvalidKeywords:
   - _DESATURATELIGHTCOLOR_ON
-  - _FRONTGRADIENTCHANGEDIRECTION_ON
-  - _RIGHTGRADIENTCHANGEDIRECTION_ON
-  - _RIMGRADIENTCHANGEDIRECTION_ON
-  - _TOPGRADIENTCHANGEDIRECTION_ON
+  - _GRADIENTCHANGEDIRECTION_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -27,6 +25,26 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _BumpMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailAlbedoMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailNormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _FrontTexture:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -36,6 +54,18 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MetallicGlossMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _OcclusionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ParallaxMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -66,69 +96,70 @@ Material:
     m_Ints: []
     m_Floats:
     - _AdditiveSimulatedLight: 0
-    - _AdditiveSimulatedLightLevel: 1
+    - _AdditiveSimulatedLightLevel: 0.5
     - _Ambient: 0
+    - _BumpScale: 1
     - _Cull: 2
     - _Cutoff: 0.5
     - _DesaturateLightColor: 1
+    - _DetailNormalMapScale: 1
     - _DirectionalLight: 0
     - _DistanceFog: 0
     - _DistanceFogDensity: 1
+    - _DistanceFogEndPosition: 0
     - _DistanceFogLength: 0
     - _DistanceFogStartPosition: 10
     - _DstBlend: 10
-    - _Exposure: 0.79
-    - _FogHeight: 2
-    - _FrontGradient: 0
-    - _FrontGradientCenter: 0.5
-    - _FrontGradientChangeDirection: 1
-    - _FrontGradientRevert: 0
-    - _FrontGradientRotation: 0
-    - _FrontGradientWidth: 0.5
+    - _FogHeight: 4.9
+    - _FrontLightLevel: 1
+    - _FrontOpacityLevel: 1
     - _FrontTextureLevel: 1
+    - _GlossMapScale: 1
+    - _Glossiness: 0.5
+    - _GlossyReflections: 1
+    - _Gradient: 1
+    - _GradientCenter: 0.55
+    - _GradientChangeDirection: 1
     - _GradientRamp: 0
+    - _GradientRevert: 0
+    - _GradientRotation: 0
+    - _GradientWidth: 0.5
+    - _Height: 0.5
     - _HeightFog: 1
     - _HeightFogDensity: 1
-    - _HeightFogStartPosition: -2.13
-    - _Intensity: 1.09
+    - _HeightFogStartPosition: -14
+    - _HeightStartPosition: 0
     - _Light: 0
     - _Lightmap: 0
     - _LightmapLevel: 5
+    - _LocalDistanceFog: 0
     - _LocalHeightFog: 0
     - _MainTextureLevel: 1
+    - _Metallic: 0
+    - _Mode: 0
     - _MultiplyLightmap: 0
-    - _OpacityLevel: 1
+    - _OcclusionStrength: 1
+    - _Parallax: 0.02
     - _Posterize: 0
     - _RenderMode: 1
-    - _RightGradient: 0
-    - _RightGradientCenter: 0.5
-    - _RightGradientChangeDirection: 1
-    - _RightGradientRevert: 0
-    - _RightGradientRotation: 0
-    - _RightGradientWidth: 0.5
+    - _RightLightLevel: 1
+    - _RightOpacityLevel: 1
     - _RightTextureLevel: 1
-    - _RimGradient: 0
-    - _RimGradientCenter: 0.5
-    - _RimGradientChangeDirection: 1
-    - _RimGradientRevert: 0
-    - _RimGradientRotation: 0
-    - _RimGradientWidth: 0.5
+    - _RimLightLevel: 1
+    - _RimOpacityLevel: 1
     - _RimTextureLevel: 1
-    - _RotationX: 40
-    - _RotationY: 144
     - _ShadowLevel: 0
     - _SimulatedLight: 0
     - _SimulatedLightDistance: 10
     - _SimulatedLightLevel: 1
+    - _SmoothnessTextureChannel: 0
+    - _SpecularHighlights: 1
     - _SrcBlend: 5
     - _Steps: 2
-    - _TopGradient: 0
-    - _TopGradientCenter: 0.5
-    - _TopGradientChangeDirection: 1
-    - _TopGradientRevert: 0
-    - _TopGradientRotation: 0
-    - _TopGradientWidth: 0.5
+    - _TopLightLevel: 1
+    - _TopOpacityLevel: 1
     - _TopTextureLevel: 1
+    - _UVSec: 0
     - _UseAlpha: 0
     - _UseAlphaValue: 0
     - _UseExternalColor: 0
@@ -136,20 +167,14 @@ Material:
     - _WorldDistanceFog: 0
     - _ZWrite: 0
     m_Colors:
-    - _BottomColor: {r: 0.67000455, g: 0.21572234, b: 0.97794116, a: 0}
     - _CenterColor: {r: 1, g: 1, b: 1, a: 1}
-    - _DistanceFogColor: {r: 0.9490197, g: 0.909804, b: 0.4039216, a: 1}
+    - _Color: {r: 0.11635202, g: 0.3197815, b: 1, a: 1}
+    - _DistanceFogColor: {r: 0.5019608, g: 0.5019608, b: 0.5019608, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _ExternalColor: {r: 1, g: 0, b: 0, a: 1}
-    - _FrontColor: {r: 1, g: 1, b: 1, a: 0}
-    - _FrontTopColor: {r: 0, g: 0, b: 0, a: 1}
-    - _HeightFogColor: {r: 0, g: 0.59772396, b: 1, a: 1}
+    - _GradientTopColor: {r: 0.28235295, g: 0.28235295, b: 0.28235295, a: 1}
+    - _HeightFogColor: {r: 0.70440245, g: 0.70440245, b: 0.70440245, a: 1}
     - _LightmapColor: {r: 0, g: 0, b: 0, a: 1}
-    - _RightColor: {r: 0, g: 1, b: 1, a: 0}
-    - _RightTopColor: {r: 0, g: 0, b: 0, a: 1}
-    - _RimColor: {r: 0, g: 1, b: 1, a: 0}
-    - _RimTopColor: {r: 0, g: 0, b: 0, a: 1}
     - _SimulatedLightPosition: {r: 0, g: 0, b: 0, a: 0}
-    - _TopColor: {r: 0, g: 1, b: 1, a: 0}
-    - _TopTopColor: {r: 0, g: 0, b: 0, a: 1}
     - _WorldDistanceFogPosition: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []

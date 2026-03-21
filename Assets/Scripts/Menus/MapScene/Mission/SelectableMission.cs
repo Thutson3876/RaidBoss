@@ -25,6 +25,14 @@ public class SelectableMission : MonoBehaviour
     [Space]
     [SerializeField] private Transform _missionSpecificStandardParent;
 
+    [SerializeField] private CurveProgression _missionStandardScaleCurve;
+
+
+    [SerializeField] private MaterialSetCustomProperty _missionGlowMaterialProperty;
+    [SerializeField] private CurveProgression _missionHoverGlowCurve;
+    
+    [SerializeField] private MeshRenderer[] _missionGlowRenderers;
+
     [Space] 
     [SerializeField] private GameObject _missionSelectCenter;
     
@@ -53,6 +61,8 @@ public class SelectableMission : MonoBehaviour
         if (_isMissionUnlocked)
         {
             SetMaterialOfPlatforms(_associatedMission.GetAssociatedLevel().GetLevelBoss().GetMiniFloorMaterial());
+            SetMaterialOfGlow(_associatedMission.GetAssociatedLevel().GetLevelBoss().GetMissionSelectionGlowMaterial());
+            _missionGlowMaterialProperty.SetUp();
         }
         else
         {
@@ -65,6 +75,14 @@ public class SelectableMission : MonoBehaviour
         foreach (MeshRenderer renderer in _missionPlatformRenderers)
         {
             renderer.material = newMaterial;
+        }
+    }
+
+    private void SetMaterialOfGlow(Material newMaterial)
+    {
+        foreach (MeshRenderer glowRenderer in _missionGlowRenderers)
+        {
+            glowRenderer.material = newMaterial;
         }
     }
 
@@ -97,6 +115,28 @@ public class SelectableMission : MonoBehaviour
     private void CreateBanner(GameObject banner)
     {
         Instantiate(banner, _missionSpecificStandardParent);
+    }
+
+    public void MissionHoveredStarted()
+    {
+        if (!_isMissionUnlocked)
+        {
+            return;
+        }
+        
+        _missionStandardScaleCurve.StartMovingUpOnCurve();
+        _missionHoverGlowCurve.StartMovingUpOnCurve();
+    }
+
+    public void MissionHoverEnded()
+    {
+        if (!_isMissionUnlocked)
+        {
+            return;
+        }
+        
+        _missionStandardScaleCurve.StartMovingDownOnCurve();
+        _missionHoverGlowCurve.StartMovingDownOnCurve();
     }
 
     public void InformControllerOfSelection()
