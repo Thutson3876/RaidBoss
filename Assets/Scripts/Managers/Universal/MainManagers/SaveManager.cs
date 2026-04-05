@@ -17,6 +17,7 @@ public class SaveManager : MainUniversalManagerFramework
     [SerializeField] private List<BossSO> _bossesInGame = new();
     [SerializeField] private List<HeroSO> _heroesInGame = new();
     [SerializeField] private MissionSO[] _missionsInGame;
+    [SerializeField] private MissionModifierSO[] _missionModifiersInGame;
 
     [Space]
     [SerializeField] private List<BossSO> _bossesStartingUnlocked = new();
@@ -28,6 +29,9 @@ public class SaveManager : MainUniversalManagerFramework
     private const int HEROES_REQUIRED_FOR_FREE_PLAY = 3;
 
     private UnityEvent _onGameplaySaveDataReset = new UnityEvent();
+    
+    [Space]
+    [SerializeField] private float _bossTargetZoneMaxOutlineStrength;
     
     [Space]
     [SerializeField] private AchievementSO _lordOfTheElementsAchievement;
@@ -63,6 +67,7 @@ public class SaveManager : MainUniversalManagerFramework
         ResetBossHeroDifficultyDictionary();
 
         GSD.GetGeneralSaveData().SetGSDScreenShakeStrength(1);
+        GSD.GetGeneralSaveData().SetGSDBossTargetZoneOutlineStrength(.5f);
         GSD.GetGeneralSaveData().SetGSDHeroClickAndDrag(false);
 
         GSD.GetGeneralSaveData().SetGSDMasterVolume(.5f);
@@ -125,7 +130,7 @@ public class SaveManager : MainUniversalManagerFramework
         {
             if (!GSD.GetGameplaySaveData().GetBossHeroBestDifficulty().ContainsKey(bossSO.GetBossName()))
             {
-                GSD.GetGameplaySaveData().GetBossHeroBestDifficulty().Add(bossSO.GetBossName(), new Dictionary<string, EGameDifficulty>());
+                GSD.GetGameplaySaveData().GetBossHeroBestDifficulty().Add(bossSO.GetBossName(), new Dictionary<string, int>());
             }
 
             foreach (HeroSO heroSO in _heroesInGame)
@@ -133,7 +138,7 @@ public class SaveManager : MainUniversalManagerFramework
                 if (!GSD.GetGameplaySaveData().GetBossHeroBestDifficulty()[bossSO.GetBossName()]
                         .ContainsKey(heroSO.GetHeroName()))
                 {
-                    GSD.GetGameplaySaveData().GetBossHeroBestDifficulty()[bossSO.GetBossName()].Add(heroSO.GetHeroName(), EGameDifficulty.Empty);
+                    GSD.GetGameplaySaveData().GetBossHeroBestDifficulty()[bossSO.GetBossName()].Add(heroSO.GetHeroName(), (int)EGameDifficulty.Empty);
                 }
             }
         }
@@ -166,6 +171,9 @@ public class SaveManager : MainUniversalManagerFramework
             GSD = JsonConvert.DeserializeObject<GameSaveData>(json);
             
             SelectionManager.Instance.SetSelectedDifficulty((EGameDifficulty)GSD.GetGameplaySaveData().GetCurrentDifficultySelected());
+            SelectionManager.Instance.SetSelectedDifficultyAndMythicPlusLevel(
+                (EGameDifficulty)GSD.GetGameplaySaveData().GetCurrentDifficultySelected(),
+                GSD.GetGameplaySaveData().GetCurrentMythicPlusLevelSelected());
 
             UpdateOldSaveData();
         }
@@ -206,6 +214,7 @@ public class SaveManager : MainUniversalManagerFramework
         else
         {
             SaveBossDifficultyHeroesDictionary();
+            AttemptUnlockOfNextMythicPlusLevel();
         }
         
         SaveText();
@@ -217,14 +226,19 @@ public class SaveManager : MainUniversalManagerFramework
     public void SaveBossDifficultyHeroesDictionary()
     {
         BossSO tempBoss = SelectionManager.Instance.GetSelectedBoss();
-        EGameDifficulty tempDifficulty = SelectionManager.Instance.GetSelectedDifficulty();
+        int tempDifficulty = (int)SelectionManager.Instance.GetSelectedDifficulty();
         List<HeroSO> tempHeroes = SelectionManager.Instance.GetAllSelectedHeroes();
+
+        if (tempDifficulty == (int)EGameDifficulty.MythicPlus)
+        {
+            tempDifficulty += SelectionManager.Instance.GetMythicPlusLevel();
+        }
 
         //Iterate through the heroes that are in play
         foreach (HeroSO currentTempHero in tempHeroes)
         {
             //If the current difficulty is more than the current best beaten difficulty against this boss
-            if ((int)tempDifficulty > (int)GSD.GetGameplaySaveData().GetBossHeroBestDifficulty()[tempBoss.GetBossName()][currentTempHero.GetHeroName()])
+            if (tempDifficulty > (int)GSD.GetGameplaySaveData().GetBossHeroBestDifficulty()[tempBoss.GetBossName()][currentTempHero.GetHeroName()])
             {
                 //Save the current difficulty into the best beaten difficulty
                 GSD.GetGameplaySaveData().GetBossHeroBestDifficulty()[tempBoss.GetBossName()]
@@ -233,6 +247,19 @@ public class SaveManager : MainUniversalManagerFramework
         }
 
         CheckForLordOfTheElementsAchievement();
+    }
+
+    public void AttemptUnlockOfNextMythicPlusLevel()
+    {
+        if (SelectionManager.Instance.GetSelectedDifficulty() != EGameDifficulty.MythicPlus)
+        {
+            return;
+        }
+
+        if (SelectionManager.Instance.GetIsAtHighestMythicPlusLevel())
+        {
+            UnlockNextMythicPlusLevel();
+        }
     }
 
     private void CheckForLordOfTheElementsAchievement()
@@ -247,7 +274,7 @@ public class SaveManager : MainUniversalManagerFramework
             foreach (HeroSO heroSO in _heroesInGame)
             {
                 if (GSD.GetGameplaySaveData().GetBossHeroBestDifficulty()[boss.GetBossName()][
-                        heroSO.GetHeroName()]!= EGameDifficulty.MythicPlus)
+                        heroSO.GetHeroName()] < (int)EGameDifficulty.MythicPlus)
                 {
                     return;
                 }
@@ -260,6 +287,12 @@ public class SaveManager : MainUniversalManagerFramework
     private void DifficultyChanged(EGameDifficulty gameDifficulty)
     {
         GSD.GetGameplaySaveData().SetCurrentDifficultySelectedFromEnum(gameDifficulty);
+        SaveText();
+    }
+
+    private void MythicPlusLevelChanged(int level)
+    {
+        GSD.GetGameplaySaveData().SetCurrentMythicPlusLevelSelected(level);
         SaveText();
     }
 
@@ -352,6 +385,30 @@ public class SaveManager : MainUniversalManagerFramework
     }
     #endregion
     
+    #region Mission Modifier Unlocks
+
+    public void UnlockMissionModifier(MissionModifierSO missionModifier)
+    {
+        if (missionModifier.IsUnityNull())
+        {
+            return;
+        }
+
+        if (!IsMissionModifierUnlocked(missionModifier))
+        {
+            GSD.GetGameplaySaveData().GetMissionModifiersUnlocked().Add(missionModifier.GetModifierID());
+        }
+    }
+
+    public void UnlockAllMissionModifiers()
+    {
+        foreach (MissionModifierSO missionModifer in _missionModifiersInGame)
+        {
+            UnlockMissionModifier(missionModifer);
+        }
+    }
+    #endregion
+    
     #region MissionUnlocks
 
     public void UnlockMission(MissionSO mission, bool doesUpdateNextMission)
@@ -381,6 +438,8 @@ public class SaveManager : MainUniversalManagerFramework
         AddMissionAsComplete(mission);
 
         UnlockCharacterFromMission(mission);
+        
+        UnlockMissionModifierFromMission(mission);
 
         UnlockMissionsFromMission(mission);
 
@@ -397,6 +456,11 @@ public class SaveManager : MainUniversalManagerFramework
     public void UnlockCharacterFromMission(MissionSO mission)
     {
         UnlockCharacter(mission.GetCharacterUnlock());
+    }
+
+    public void UnlockMissionModifierFromMission(MissionSO mission)
+    {
+        UnlockMissionModifier(mission.GetMissionModifierUnlock());
     }
 
     public void UnlockMissionsFromMission(MissionSO mission)
@@ -420,6 +484,21 @@ public class SaveManager : MainUniversalManagerFramework
             AchievementManager.Instance.UnlockAchievement(achievementUnlocks[i]);
         }
     }
+    #endregion
+    
+    #region Difficulties
+
+    public void UnlockNextMythicPlusLevel()
+    {
+        SetHighestMythicPlusLevelUnlocked(GSD.GetGameplaySaveData().HighestMythicPlusLevelUnlocked + 1);
+    }
+    
+    public void SetHighestMythicPlusLevelUnlocked(int level)
+    {
+        GSD.GetGameplaySaveData().SetHighestMythicPlusLevelUnlocked(level);
+        SaveText();
+    }
+    
     #endregion
 
     #region BaseManager
@@ -446,6 +525,7 @@ public class SaveManager : MainUniversalManagerFramework
     {
         base.SubscribeToEvents();
         SelectionManager.Instance.GetDifficultySelectionEvent().AddListener(DifficultyChanged);
+        SelectionManager.Instance.GetMythicPlusLevelSelectionEvent().AddListener(MythicPlusLevelChanged);
     }
 
     #endregion
@@ -463,21 +543,53 @@ public class SaveManager : MainUniversalManagerFramework
     public MissionSO[] GetMissionsInGame() => _missionsInGame;
     
     public int GetNextMissionID() => GSD.GetGameplaySaveData().GetNextMissionID();
+    
+    public List<BossSO> GetBossesInGame() => _bossesInGame;
 
     public bool IsBossUnlocked(BossSO bossSO) => GSD.GetGameplaySaveData().GetBossesUnlocked().Contains(bossSO.GetBossName());
     public bool IsHeroUnlocked(HeroSO heroSO) => GSD.GetGameplaySaveData().GetHeroesUnlocked().Contains(heroSO.GetHeroName());
     
+    
     public bool IsMissionUnlocked(MissionSO missionSO) => GSD.GetGameplaySaveData().GetMissionsUnlocked().Contains(missionSO.GetMissionID());
     public bool IsMissionCompleted(MissionSO missionSO) => GSD.GetGameplaySaveData().GetMissionsComplete().Contains(missionSO.GetMissionID());
     
+    public bool IsMissionModifierUnlocked(MissionModifierSO missionModifierSO) => GSD.GetGameplaySaveData()
+        .MissionModifiersUnlocked.Contains(missionModifierSO.GetModifierID());
+    
+    
+    public List<HeroSO> GetHeroesInGame() => _heroesInGame;
+    
     public EGameDifficulty GetBestDifficultyBeatenOnHeroForBoss(BossSO bossSO, HeroSO heroSO)
+    {
+        int difficulty =  GSD.GetGameplaySaveData().GetBossHeroBestDifficulty()[bossSO.GetBossName()][heroSO.GetHeroName()];
+
+        if (difficulty > (int)EGameDifficulty.MythicPlus)
+        {
+            difficulty = (int)EGameDifficulty.MythicPlus;
+        }
+
+        return (EGameDifficulty)difficulty;
+    }
+
+    public int GetBestDifficultyIntBeatenOnHeroForBoss(BossSO bossSO, HeroSO heroSO)
     {
         return GSD.GetGameplaySaveData().GetBossHeroBestDifficulty()[bossSO.GetBossName()][heroSO.GetHeroName()];
     }
 
+    public int GetBestMythicPlusLevelBeatenOnHeroForBoss(BossSO bossSO, HeroSO heroSO)
+    {
+        return GSD.GetGameplaySaveData().GetBossHeroBestDifficulty()[bossSO.GetBossName()][heroSO.GetHeroName()] - (int)EGameDifficulty.MythicPlus;
+    }
+
+    public int GetHighestMythicPlusLevelUnlocked() => GSD.GetGameplaySaveData().GetHighestMythicPlusLevelUnlocked();
+
     public bool IsFreePlayUnlocked() => GSD.GetGameplaySaveData().HeroesUnlocked.Count >= HEROES_REQUIRED_FOR_FREE_PLAY;
 
     public float GetScreenShakeIntensity() => GSD.GetGeneralSaveData().GetGSDScreenShakeStrength();
+    public float GetBossTargetZoneOutlineStrength() => GSD.GetGeneralSaveData().GetGSDBossTargetZoneOutlineStrength();
+    public float GetBossTargetZoneOutlineStrengthScaled() => 
+        GSD.GetGeneralSaveData().GetGSDBossTargetZoneOutlineStrength() * _bossTargetZoneMaxOutlineStrength;
+    public float GetBossTargetZoneMaxOutlineStrength() => _bossTargetZoneMaxOutlineStrength;
 
     public bool GetClickAndDragEnabled() => GSD.GetGeneralSaveData().GetGSDHeroClickAndDragEnabled();
 
@@ -510,6 +622,12 @@ public class SaveManager : MainUniversalManagerFramework
     public void SetScreenShakeStrength(float val)
     {
         GSD.GetGeneralSaveData().SetGSDScreenShakeStrength(val);
+        SaveText();
+    }
+
+    public void SetBossTargetZoneOutlineStrength(float val)
+    {
+        GSD.GetGeneralSaveData().SetGSDBossTargetZoneOutlineStrength(val);
         SaveText();
     }
 
@@ -560,27 +678,6 @@ public class SaveManager : MainUniversalManagerFramework
                 return;
         }
     }
-
-    /// <summary>
-    /// Saves all settings at once
-    /// </summary>
-    /// <param name="screenShake"></param>
-    /// <param name="clickDrag"></param>
-    /// <param name="masterVol"></param>
-    /// <param name="musicVol"></param>
-    /// <param name="sfxVol"></param>
-    public void SaveSettingsOptions(float screenShake, bool clickDrag, float masterVol, float musicVol, float sfxVol)
-    {
-        GSD.GetGeneralSaveData().SetGSDScreenShakeStrength(screenShake);
-        GSD.GetGeneralSaveData().SetGSDHeroClickAndDrag(clickDrag);
-
-        GSD.GetGeneralSaveData().SetGSDMasterVolume(masterVol);
-        GSD.GetGeneralSaveData().SetGSDMusicVolume(musicVol);
-        GSD.GetGeneralSaveData().SetGSDSFXVolume(sfxVol);
-
-        SaveText();
-    }
-    
     
     public UnityEvent GetOnGameplaySaveDataReset()=> _onGameplaySaveDataReset;
     #endregion
@@ -616,6 +713,7 @@ public class GameplaySaveData
 {
     public HashSet<string> BossesUnlocked = new();
     public HashSet<string> HeroesUnlocked = new();
+    public HashSet<int> MissionModifiersUnlocked = new();
     
     public HashSet<int> MissionsUnlocked = new();
     public HashSet<int> MissionsComplete = new();
@@ -624,14 +722,17 @@ public class GameplaySaveData
     
     //First string is boss name, second string is hero name
     //Represents the best difficulty each hero has beaten each boss at
-    public Dictionary<string, Dictionary<string,EGameDifficulty>> BossHeroBestDifficultyComplete = new();
+    public Dictionary<string, Dictionary<string,int>> BossHeroBestDifficultyComplete = new();
     
     public int CurrentDifficultySelected = 1;
+    public int CurrentMythicPlusLevelSelected = 0;
+    public int HighestMythicPlusLevelUnlocked = 0;
     
     public void ResetGameplaySaveData()
     {
         BossesUnlocked = new();
         HeroesUnlocked = new();
+        MissionModifiersUnlocked = new();
 
         MissionsUnlocked = new();
         MissionsComplete = new();
@@ -639,6 +740,8 @@ public class GameplaySaveData
         NextMissionID = SaveManager.Instance.GetMissionsInGame()[0].GetMissionID();
         
         BossHeroBestDifficultyComplete = new();
+
+        HighestMythicPlusLevelUnlocked = 0;
     }
     
     #region Getters
@@ -648,11 +751,15 @@ public class GameplaySaveData
     public HashSet<int> GetMissionsUnlocked() => MissionsUnlocked;
     public HashSet<int> GetMissionsComplete() => MissionsComplete;
     
+    public HashSet<int> GetMissionModifiersUnlocked() => MissionModifiersUnlocked;
+    
     public int GetNextMissionID() => NextMissionID;
     
-    public Dictionary<string, Dictionary<string, EGameDifficulty>> GetBossHeroBestDifficulty() => BossHeroBestDifficultyComplete;
+    public Dictionary<string, Dictionary<string, int>> GetBossHeroBestDifficulty() => BossHeroBestDifficultyComplete;
     
     public int GetCurrentDifficultySelected() => CurrentDifficultySelected;
+    public int GetCurrentMythicPlusLevelSelected() => CurrentMythicPlusLevelSelected;
+    public int GetHighestMythicPlusLevelUnlocked() => HighestMythicPlusLevelUnlocked;
     #endregion
     
     #region Setters
@@ -662,15 +769,22 @@ public class GameplaySaveData
         NextMissionID = missionID;
     }
     
+    public void ResetBossHeroDifficulties()
+    {
+        BossHeroBestDifficultyComplete = new();
+    }
+    
     public void SetCurrentDifficultySelectedFromEnum(EGameDifficulty difficulty)
     {
         CurrentDifficultySelected = (int)difficulty;
     }
 
-    public void ResetBossHeroDifficulties()
+    public void SetCurrentMythicPlusLevelSelected(int mythicPlusLevel)
     {
-        BossHeroBestDifficultyComplete = new();
+        CurrentMythicPlusLevelSelected = mythicPlusLevel;
     }
+    
+    public void SetHighestMythicPlusLevelUnlocked(int level) => HighestMythicPlusLevelUnlocked = level;
     #endregion
 }
 
@@ -684,6 +798,7 @@ public class GeneralSaveData
     [Space]
     [Header("Settings")]
     public float ScreenShakeStrength = 1;
+    public float BossTargetZoneOutlineStrength = .5f;
     private bool HeroClickAndDragMovementEnabled;
 
     [Range(0, 1)] public float MasterVolume = .5f;
@@ -698,6 +813,7 @@ public class GeneralSaveData
     public string GetGameVersion() => GameVersion;
     
     public float GetGSDScreenShakeStrength() => ScreenShakeStrength;
+    public float GetGSDBossTargetZoneOutlineStrength() => BossTargetZoneOutlineStrength;
     public bool GetGSDHeroClickAndDragEnabled() => HeroClickAndDragMovementEnabled;
 
     public float GetGSDMasterVolume() => MasterVolume;
@@ -716,6 +832,11 @@ public class GeneralSaveData
     public void SetGSDScreenShakeStrength(float screenShake)
     {
         ScreenShakeStrength = screenShake;
+    }
+
+    public void SetGSDBossTargetZoneOutlineStrength(float strength)
+    {
+        BossTargetZoneOutlineStrength = strength;
     }
 
     public void SetGSDHeroClickAndDrag(bool clickDrag)

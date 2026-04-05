@@ -42,10 +42,17 @@ public class DebugScript : MonoBehaviour
         {
             SaveManager.Instance.UnlockNextMissions();
         }
+
+        if (Input.GetKeyDown(KeyCode.Minus) || Input.GetKeyDown(KeyCode.Underscore))
+        {
+            BossStats.Instance.DecreaseTimeUntilEnraged(30);
+        }
         
         if(Input.GetKeyDown(KeyCode.Y))
         {
             SaveManager.Instance.UnlockAllCharacters();
+
+            SaveManager.Instance.UnlockAllMissionModifiers();
         }
 
         if (Input.GetKeyDown(KeyCode.U))
@@ -110,6 +117,11 @@ public class DebugScript : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Quote))
         {
             BossBase.Instance.GetSpecificBossScript().SkipCurrentAttack();
+        }
+
+        if (Input.GetKeyDown(KeyCode.Slash))
+        {
+            SaveManager.Instance.UnlockNextMythicPlusLevel();
         }
     }
 #endif

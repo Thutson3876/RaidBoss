@@ -39,7 +39,16 @@ public class BossStats : BossChildrenFunctionality
     private float _storedScalingEnrageDamageMultiplier = 1;
 
     private float _currentTimeUntilEnrage;
+    private float _enrageMaxTime;
+    private float _timeUntilEnrageProgress = 0;
     private Coroutine _enrageCoroutine;
+    
+    [SerializeField] private float _bossEnrageWarningTime;
+    [SerializeField] private float _bossEnrageImpendingTime;
+    private bool _hasEnrageWarningBegun = false;
+    private bool _hasEnrageImpendingBegun = false;
+
+    private float _bossEnragedWarningProgress = 0;
 
     #region Set Up
     /// <summary>
@@ -70,7 +79,8 @@ public class BossStats : BossChildrenFunctionality
         //Sets the damage dealt multiplier based on the difficulty
         _baseBossDamageMultiplier = SelectionManager.Instance.GetDamageMultiplierFromDifficulty();
 
-        _currentTimeUntilEnrage = bossSO.GetEnrageTime();
+        _enrageMaxTime = bossSO.GetEnrageTime();
+        _currentTimeUntilEnrage = _enrageMaxTime;
         _storedEnrageMultiplier = bossSO.GetEnrageDamageMultiplier();
 
         // Gets the scaling enrage damage multiplier rate and divides it by 60 to get the rate in seconds
@@ -91,10 +101,27 @@ public class BossStats : BossChildrenFunctionality
         }
         
         GameplayModifiersManager.Instance.AdjustBossStatsFromModifiers(this);
+
+        if (SelectionManager.Instance.IsPlayingFreeMode())
+        {
+            /*Debug.Log("Multipliers of level " + SelectionManager.Instance.GetMythicPlusLevel() +
+                      "    health: " + SelectionManager.Instance.GetHealthMultiplierFromMythicPlusLevel()
+                      + "    stagger: " + SelectionManager.Instance.GetStaggerMultiplierFromMythicPlusLevel()
+                      + "    damage: " + SelectionManager.Instance.GetDamageMultiplierFromMythicPlusLevel()
+                      + "    speed: " + SelectionManager.Instance.GetSpeedMultiplierFromMythicPlusLevel());*/
+            
+            _bossMaxHealth *= SelectionManager.Instance.GetHealthMultiplierFromMythicPlusLevel();
+
+            _bossDefaultStaggerMax *= SelectionManager.Instance.GetStaggerMultiplierFromMythicPlusLevel();
+            
+            _baseBossDamageMultiplier *= SelectionManager.Instance.GetDamageMultiplierFromMythicPlusLevel();
+        }
         
         //Sets the starting health and stagger values
         _currentHealth = _bossMaxHealth;
         _currentStaggerCounter = 0;
+        
+        //Debug.Log("Stats:    health: " + _currentHealth + "    stagger: " + _bossDefaultStaggerMax + "    damage: " + _baseBossDamageMultiplier);
     }
 #endregion
 
@@ -265,11 +292,23 @@ public class BossStats : BossChildrenFunctionality
     {
         while(_currentTimeUntilEnrage > 0)
         {
-            _currentTimeUntilEnrage -= Time.deltaTime;
+            DecreaseTimeUntilEnraged(Time.deltaTime);
+            
             yield return null;
         }
 
         EnrageMax();
+    }
+
+    private void BossEnrageImpending()
+    {
+        AudioManager.Instance.PlaySpecificAudio(AudioManager.Instance.GeneralBossAudio.EnrageAudio.BossEnrageImpending);
+        _hasEnrageImpendingBegun = true;
+    }
+    
+    public void BeginBossEnrageWarning()
+    {
+        BossBase.Instance.InvokeBossEnrageCountdownBegunEvent();
     }
 
     /// <summary>
@@ -277,10 +316,11 @@ public class BossStats : BossChildrenFunctionality
     /// </summary>
     private void EnrageMax()
     {
-        Debug.Log("Boss Enraged");
         _isBossEnraged = true;
         _bossEnrageDamageMultiplier = _storedEnrageMultiplier;
         _myBossBase.InvokeBossEnragedEvent();
+        
+        AudioManager.Instance.PlaySpecificAudio(AudioManager.Instance.GeneralBossAudio.EnrageAudio.BossEnrageStarted);
 
         StartScalingEnrageMultiplier();
     }
@@ -431,6 +471,32 @@ public class BossStats : BossChildrenFunctionality
         _myBossBase.InvokeBossStaggerDealtEventDetailed(details);
 
         CheckIfBossIsStaggered();
+    }
+    
+    public void DecreaseTimeUntilEnraged(float enrageTime)
+    {
+        _currentTimeUntilEnrage -= enrageTime;
+        _timeUntilEnrageProgress = 1 - (_currentTimeUntilEnrage / _enrageMaxTime);
+        _myBossBase.InvokeBossEnrageProgressUpdatedEvent(_timeUntilEnrageProgress);
+
+        if (!_hasEnrageWarningBegun)
+        {
+            if (_currentTimeUntilEnrage <= _bossEnrageWarningTime)
+            {
+                _hasEnrageWarningBegun = true;
+                BeginBossEnrageWarning();
+            }
+        }
+        else
+        {
+            if (!_hasEnrageImpendingBegun && _currentTimeUntilEnrage <= _bossEnrageImpendingTime)
+            {
+                BossEnrageImpending();
+            }
+                
+            _bossEnragedWarningProgress = 1 - (_currentTimeUntilEnrage / _bossEnrageWarningTime);
+            BossBase.Instance.InvokeBossEnrageCountdownProgressUpdatedEvent(_bossEnragedWarningProgress);
+        }
     }
 
     public void MultiplyBossDamageMultiplier(float amount)

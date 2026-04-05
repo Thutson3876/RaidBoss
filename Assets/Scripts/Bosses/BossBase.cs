@@ -37,7 +37,11 @@ public class BossBase : MonoBehaviour
     protected UnityEvent _bossReachedQuarterHealthEvent = new UnityEvent();
     protected UnityEvent _bossReachedTenthHealthEvent = new UnityEvent();
 
+    protected UnityEvent<float> _bossEnrageProgressUpdatedEvent = new UnityEvent<float>();
+    protected UnityEvent _bossEnrageCountdownBegunEvent = new UnityEvent();
+    protected UnityEvent<float> _bossEnrageCountdownProgressUpdatedEvent = new UnityEvent<float>();
     protected UnityEvent _bossEnragedEvent = new UnityEvent();
+    
 
     /// <summary>
     /// Performs the set up needed for the boss
@@ -174,6 +178,21 @@ public class BossBase : MonoBehaviour
         _bossReachedTenthHealthEvent?.Invoke();
     }
 
+    public void InvokeBossEnrageProgressUpdatedEvent(float percentage)
+    {
+        _bossEnrageProgressUpdatedEvent?.Invoke(percentage);
+    }
+    
+    public void InvokeBossEnrageCountdownBegunEvent()
+    {
+        _bossEnrageCountdownBegunEvent?.Invoke();
+    }
+    
+    public void InvokeBossEnrageCountdownProgressUpdatedEvent(float percentage)
+    {
+        _bossEnrageCountdownProgressUpdatedEvent?.Invoke(percentage);
+    }
+    
     public void InvokeBossEnragedEvent()
     {
         _bossEnragedEvent?.Invoke();
@@ -204,6 +223,9 @@ public class BossBase : MonoBehaviour
     public UnityEvent GetBossQuarterHealthEvent() => _bossReachedQuarterHealthEvent;
     public UnityEvent GetBossTenthHealthEvent() => _bossReachedTenthHealthEvent;
 
+    public UnityEvent<float> GetBossEnrageProgressUpdatedEvent() => _bossEnrageProgressUpdatedEvent;
+    public UnityEvent GetBossEnrageCountdownBegunEvent() => _bossEnrageCountdownBegunEvent;
+    public UnityEvent<float> GetBossEnrageCountdownProgressUpdatedEvent() => _bossEnrageCountdownProgressUpdatedEvent;
     public UnityEvent GetBossEnragedEvent() => _bossEnragedEvent;
     #endregion
 

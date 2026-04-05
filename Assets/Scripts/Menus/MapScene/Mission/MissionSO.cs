@@ -28,6 +28,9 @@ public class MissionSO : ScriptableObject
     [SerializeField] private CharacterSO _characterUnlock;
 
     [Space] 
+    [SerializeField] private MissionModifierSO _missionModifierUnlock;
+
+    [Space] 
     [SerializeField] private MissionSO[] _missionUnlocks;
 
     [Space]
@@ -54,6 +57,7 @@ public class MissionSO : ScriptableObject
     public TutorialPage[] GetTutorialPages() => _tutorialPages;
     
     public CharacterSO GetCharacterUnlock() =>_characterUnlock;
+    public MissionModifierSO GetMissionModifierUnlock() =>_missionModifierUnlock;
     public MissionSO[] GetMissionUnlocks() =>_missionUnlocks;
     public AchievementSO[] GetAchievementUnlocks() =>_achievementUnlocks;
     
@@ -106,7 +110,7 @@ public class TutorialPage
 
     [Space]
     public Vector2 DefaultTextLocation;
-    [TextArea(1, 9)]public string DefaultText;
+    [TextArea(1, 10)]public string DefaultText;
 
     [Space] 
     public Vector2 TutorialPageObjectLocation;
