@@ -341,11 +341,20 @@ public abstract class SpecificBossFramework : MonoBehaviour
         {
             return;
         }
+        
 
         _currentAbility = SelectNextAbility();
-        AddAbilityToEndOfCooldownQueue(_currentAbility);
-
-        _nextAttackProcess = StartCoroutine(UseNextAbilityProcess(_currentAbility));
+        
+        if (_currentAbility.GetCanAbilityBeUsed())
+        {
+            AddAbilityToEndOfCooldownQueue(_currentAbility);
+            _nextAttackProcess = StartCoroutine(UseNextAbilityProcess(_currentAbility));
+        }
+        else
+        {
+            // Skip the current ability
+            StartNextAbility();
+        }
     }
 
     /// <summary>
@@ -515,6 +524,23 @@ public abstract class SpecificBossFramework : MonoBehaviour
         {
             _currentAbility.StopBossAbility();
         }
+        
+        CheckToUnlockSpecialistAchievement();
+    }
+
+    protected virtual void CheckToUnlockSpecialistAchievement()
+    {
+        
+    }
+
+    protected virtual void UnlockedSpecialistAchievement()
+    {
+        if (_myBossBase.GetBossSO().GetAssociatedSpecialistAchievement().IsUnityNull())
+        {
+            return;
+        }
+        
+        AchievementManager.Instance.UnlockAchievement(_myBossBase.GetBossSO().GetAssociatedSpecialistAchievement());
     }
 
     /// <summary>

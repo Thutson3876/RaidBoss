@@ -154,6 +154,18 @@ public class CurveProgression : MonoBehaviour
         }
     }
 
+    public void StartMovingInUpwardsBoolDirection(bool direction)
+    {
+        if (direction)
+        {
+            StartMovingUpOnCurve();
+        }
+        else
+        {
+            StartMovingDownOnCurve();
+        }
+    }
+
     public void StartMovingUpOnCurve()
     {
         if (_hasDecreaseDelay)
@@ -251,6 +263,12 @@ public class CurveProgression : MonoBehaviour
         }
         
         InvokeOnCurveValueChanged();
+    }
+
+    public void ForceSetCurveProgress(float progress)
+    {
+        _movementProgress = progress;
+        UpdateCurveProgress();
     }
 
     #region MoveDelay
@@ -364,6 +382,15 @@ public class CurveProgression : MonoBehaviour
     {
         return CurveStatus == ECurveStatus.Decreasing || CurveStatus == ECurveStatus.AtMinValue;
     }
+
+    #region Setters
+
+    public void SetHasStartingValue(bool hasStartingValue)
+    {
+        _hasDefaultValue = hasStartingValue;
+    }
+
+    #endregion
 }
 
 public enum ECurveStatus

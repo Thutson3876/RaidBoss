@@ -112,6 +112,35 @@ MonoBehaviour:
             Data3: 879488155
             Data4: -342192165
           Path: event:/SoundEffect/Bosses/GeneralBosses/TargetZone/BossTargetZoneSpawned
+    EnrageAudio:
+      BossEnrageImpending:
+        AudioName: EnrageImpending
+        DefaultInstanceFadeInTime: 0
+        DefaultInstanceFadeOutTime: 0
+        DoesCancelPreviousInstancesOfSpecificAudioOnPlay: 0
+        DefaultPlayType: 0
+        DefaultAudioChoice: 0
+        AudioTracks:
+        - Guid:
+            Data1: -691556757
+            Data2: 1288240633
+            Data3: -1694152543
+            Data4: -1653650902
+          Path: event:/SoundEffect/Bosses/GeneralBosses/Enrage/EnrageImpending/BossEnrageImpending
+      BossEnrageStarted:
+        AudioName: EnrageStarted
+        DefaultInstanceFadeInTime: 0
+        DefaultInstanceFadeOutTime: 0
+        DoesCancelPreviousInstancesOfSpecificAudioOnPlay: 0
+        DefaultPlayType: 0
+        DefaultAudioChoice: 0
+        AudioTracks:
+        - Guid:
+            Data1: 1688683727
+            Data2: 1212789429
+            Data3: 34754475
+            Data4: -1071219059
+          Path: event:/SoundEffect/Bosses/GeneralBosses/Enrage/EnrageStarted/BossEnrageStarted
   AllSpecificBossAudio:
   - AssociatedBoss: MagmaLord
     SelectionSelectedAudio:
@@ -269,19 +298,32 @@ MonoBehaviour:
         DefaultAudioChoice: 0
         AudioTracks: []
       GeneralAbilityAudio:
+      - AudioName: VolcanoFutureTargetZoneSpawned
+        DefaultInstanceFadeInTime: 0
+        DefaultInstanceFadeOutTime: 0
+        DoesCancelPreviousInstancesOfSpecificAudioOnPlay: 0
+        DefaultPlayType: 0
+        DefaultAudioChoice: 0
+        AudioTracks:
+        - Guid:
+            Data1: -1371343706
+            Data2: 1294850580
+            Data3: -1093043800
+            Data4: -1631948465
+          Path: event:/SoundEffect/Bosses/Specific/MagmaLord/Abilities/Volcano/MagmaLordVolcanoFutureZoneSpawned
       - AudioName: VolcanoImpact
         DefaultInstanceFadeInTime: 0
         DefaultInstanceFadeOutTime: 0
         DoesCancelPreviousInstancesOfSpecificAudioOnPlay: 0
         DefaultPlayType: 1
-        DefaultAudioChoice: 1
+        DefaultAudioChoice: 0
         AudioTracks:
         - Guid:
             Data1: -1865652598
             Data2: 1123647054
             Data3: 437322369
             Data4: -952020448
-          Path: event:/SoundEffect/Bosses/Specific/MagmaLord/Abilities/Volcano/Volcano1
+          Path: event:/SoundEffect/Bosses/Specific/MagmaLord/Abilities/Volcano/MagmaLordVolcanoImpact
     BossAmbience:
       AudioName: MagmaLordAmbience
       DefaultInstanceFadeInTime: 0
@@ -1530,7 +1572,20 @@ MonoBehaviour:
       DefaultPlayType: 0
       DefaultAudioChoice: 0
       AudioTracks: []
-    MiscellaneousHeroAudio: []
+    MiscellaneousHeroAudio:
+    - AudioName: ManualBounce
+      DefaultInstanceFadeInTime: 0
+      DefaultInstanceFadeOutTime: 0
+      DoesCancelPreviousInstancesOfSpecificAudioOnPlay: 0
+      DefaultPlayType: 0
+      DefaultAudioChoice: 0
+      AudioTracks:
+      - Guid:
+          Data1: 2080026388
+          Data2: 1107893664
+          Data3: 2114508932
+          Data4: -350198174
+        Path: event:/SoundEffect/Heroes/SpecificHeroes/Fae/Active/FaeWallBounce
   - AssociatedHero: Astromancer
     SelectionSelectedAudio:
       AudioName: AstromancerSelection
@@ -1921,7 +1976,7 @@ MonoBehaviour:
             Data2: 1133165705
             Data3: 1387047557
             Data4: -2089332132
-          Path: event:/SoundEffect/UI/General/Buttons/BookOpened
+          Path: event:/SoundEffect/UI/General/Buttons/Pressed/BookOpened
       - AudioName: BookClose
         DefaultInstanceFadeInTime: 0
         DefaultInstanceFadeOutTime: 0
@@ -1934,7 +1989,7 @@ MonoBehaviour:
             Data2: 1337621057
             Data3: 2032071308
             Data4: 1385686163
-          Path: event:/SoundEffect/UI/General/Buttons/BookClosed
+          Path: event:/SoundEffect/UI/General/Buttons/Pressed/BookClosed
     GeneralUIAudio:
     - AudioName: 
       DefaultInstanceFadeInTime: 0

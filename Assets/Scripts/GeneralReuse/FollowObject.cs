@@ -27,6 +27,7 @@ public class FollowObject : MonoBehaviour
     [SerializeField] private UnityEvent _onFollowStart;
     [SerializeField] private UnityEvent _onFollowStopDelayStarted;
     [SerializeField] private UnityEvent _onFollowStop;
+    [SerializeField] private UnityEvent _onFollowObjectMissing;
     
     private GameObject _currentFollowTarget;
     
@@ -112,11 +113,16 @@ public class FollowObject : MonoBehaviour
                 }
                 else if (_doesDestroyAfterStopFollowing)
                 {
-                    Destroy(gameObject,_destroyFollowDelay);
+                    DestroyAfterStopFollowing();
                 }
             }
         }
         
+    }
+
+    public void DestroyAfterStopFollowing()
+    {
+        Destroy(gameObject,_destroyFollowDelay);
     }
 
     private IEnumerator FollowingObjectProcess()
@@ -126,6 +132,9 @@ public class FollowObject : MonoBehaviour
             transform.position = _currentFollowTarget.transform.position + _followLocationOffset;
             yield return null;
         }
+
+        StopFollowing(true);
+        InvokeOnFollowObjectMissing();
     }
 
     private void TriggerStartFollowingAnimation()
@@ -157,6 +166,11 @@ public class FollowObject : MonoBehaviour
     public void InvokeOnFollowStop()
     {
         _onFollowStop?.Invoke();
+    }
+
+    private void InvokeOnFollowObjectMissing()
+    {
+        _onFollowObjectMissing?.Invoke();
     }
     
     #region Setters
