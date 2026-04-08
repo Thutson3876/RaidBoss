@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 public static class MeterLogger
 {
-    private static readonly string LoggingDomain = Environment.GetEnvironmentVariable("LOGGING_DOMAIN");
+    private static readonly string LoggingDomain = "http://localhost:3001/api/battles";
 
     private static string FetchMeterToken()
     {
