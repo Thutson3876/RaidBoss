@@ -121,7 +121,7 @@ public class DamageMeterManager : MainGameplayManagerFramework
         _battleIsActive = false;
 
         if(_logMeters)
-            MeterLogger.LogMeters(won, _damageMeters.Values, _staggerMeters.Values, _healingMeters.Values);
+            MeterLogger.LogMeters(won, _battleTimeElapsed, _damageMeters.Values, _staggerMeters.Values, _healingMeters.Values);
     }
 }
 
