@@ -25,9 +25,9 @@ public class DamageMeterManager : MainGameplayManagerFramework
     private bool _showMeters = true;
     [SerializeField, Range(0, 255)]
     private float _heroColorAlpha = 180;
-
-    private readonly Dictionary<string, float> _damageMeter = new();
-    private readonly Dictionary<string, Meter> _meters = new();
+    [Header("Logging")]
+    [SerializeField]
+    private bool _logMeters = true;
 
     private float _battleStartTime = 0;
     private bool _battleIsActive = false;
@@ -48,7 +48,8 @@ public class DamageMeterManager : MainGameplayManagerFramework
         BossBase.Instance.GetBossStaggerDealtEventDetailed().AddListener(AddToStaggerMeters);
 
         GameStateManager.Instance.GetStartOfBattleEvent().AddListener(OnBattleStart);
-        GameStateManager.Instance.GetBattleWonOrLostEvent().AddListener(OnBattleEnd);
+        GameStateManager.Instance.GetBattleWonEvent().AddListener(OnBattleWon);
+        GameStateManager.Instance.GetBattleLostEvent().AddListener(OnBattleLost);
     }
 
     private void Start()
@@ -105,9 +106,22 @@ public class DamageMeterManager : MainGameplayManagerFramework
         _battleIsActive = true;
     }
 
-    private void OnBattleEnd()
+    private void OnBattleWon()
+    {
+        OnBattleEnd(true);
+    }
+
+    private void OnBattleLost()
+    {
+        OnBattleEnd(false);
+    }
+
+    private void OnBattleEnd(bool won)
     {
         _battleIsActive = false;
+
+        if(_logMeters)
+            MeterLogger.LogMeters(won, _damageMeters.Values, _staggerMeters.Values, _healingMeters.Values);
     }
 }
 

@@ -17,6 +17,8 @@ public class MetersContainer : MonoBehaviour
     public float HeroColorAlpha { get; set; } = 180;
     public float BattleTimeElapsed { get; set; } = 0;
 
+    public Dictionary<string, float> Values => _values;
+
     public void AddToMeters(MeterEventDetails details)
     {
         if (_values.ContainsKey(details.dealerName))
