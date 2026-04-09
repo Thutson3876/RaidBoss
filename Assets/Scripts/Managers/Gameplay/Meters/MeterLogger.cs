@@ -21,11 +21,11 @@ public static class MeterLogger
         return PlayerPrefs.GetString("meterToken");
     }
 
-    public static async void LogMeters(bool battleWon, float battleDuration, Dictionary<string, float> damage, Dictionary<string, float> stagger, Dictionary<string, float> healing)
+    public static async void LogMeters(bool battleWon, int battleDifficulty, List<int> modifierIDs, float battleDuration, Dictionary<string, float> damage, Dictionary<string, float> stagger, Dictionary<string, float> healing)
     {
         string meterToken = FetchMeterToken();
 
-        string json = JsonConvert.SerializeObject(new { meterToken, battleWon, battleDuration, damage, stagger, healing });
+        string json = JsonConvert.SerializeObject(new { meterToken, battleWon, battleDifficulty, modifierIDs, battleDuration, damage, stagger, healing });
         byte[] body = Encoding.UTF8.GetBytes(json);
 
         using UnityWebRequest request = new(LoggingDomain, "POST");

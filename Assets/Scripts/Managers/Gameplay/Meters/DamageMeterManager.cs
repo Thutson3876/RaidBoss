@@ -120,8 +120,15 @@ public class DamageMeterManager : MainGameplayManagerFramework
     {
         _battleIsActive = false;
 
-        if(_logMeters)
-            MeterLogger.LogMeters(won, _battleTimeElapsed, _damageMeters.Values, _staggerMeters.Values, _healingMeters.Values);
+        if (_logMeters)
+        {
+            int difficulty = SelectionManager.Instance.GetSelectedDifficultyID() + SelectionManager.Instance.GetMythicPlusLevel();
+            List<MissionModifierSO> modifiers = SelectionManager.Instance.GetCurrentMissionModifiers();
+            List<int> modifierIDs = modifiers.Select(m => m.GetModifierID()).ToList();
+
+            MeterLogger.LogMeters(won, difficulty, modifierIDs, _battleTimeElapsed, _damageMeters.Values, _staggerMeters.Values, _healingMeters.Values);
+        }
+            
     }
 }
 
