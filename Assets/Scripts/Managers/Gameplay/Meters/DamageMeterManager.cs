@@ -125,8 +125,9 @@ public class DamageMeterManager : MainGameplayManagerFramework
             int difficulty = SelectionManager.Instance.GetSelectedDifficultyID() + SelectionManager.Instance.GetMythicPlusLevel();
             List<MissionModifierSO> modifiers = SelectionManager.Instance.GetCurrentMissionModifiers();
             List<int> modifierIDs = modifiers.Select(m => m.GetModifierID()).ToList();
+            int bossId = SelectionManager.Instance.GetSelectedBoss().GetBossID();
 
-            MeterLogger.LogMeters(won, difficulty, modifierIDs, _battleTimeElapsed, _damageMeters.Values, _staggerMeters.Values, _healingMeters.Values);
+            MeterLogger.LogMeters(won, difficulty, modifierIDs, bossId, _battleTimeElapsed, _damageMeters.Values, _staggerMeters.Values, _healingMeters.Values);
         }
             
     }
