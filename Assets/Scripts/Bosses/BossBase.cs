@@ -41,6 +41,7 @@ public class BossBase : MonoBehaviour
     protected UnityEvent _bossEnrageCountdownBegunEvent = new UnityEvent();
     protected UnityEvent<float> _bossEnrageCountdownProgressUpdatedEvent = new UnityEvent<float>();
     protected UnityEvent _bossEnragedEvent = new UnityEvent();
+    protected UnityEvent GetBossEnragedSecondPassedEnrageEvent = new UnityEvent();
     
 
     /// <summary>
@@ -197,6 +198,11 @@ public class BossBase : MonoBehaviour
     {
         _bossEnragedEvent?.Invoke();
     }
+
+    public void InvokeBossEnrageSecondPassedEvent()
+    {
+        GetBossEnragedSecondPassedEnrageEvent?.Invoke();
+    }
     #endregion
 
     #region Getters
@@ -227,6 +233,7 @@ public class BossBase : MonoBehaviour
     public UnityEvent GetBossEnrageCountdownBegunEvent() => _bossEnrageCountdownBegunEvent;
     public UnityEvent<float> GetBossEnrageCountdownProgressUpdatedEvent() => _bossEnrageCountdownProgressUpdatedEvent;
     public UnityEvent GetBossEnragedEvent() => _bossEnragedEvent;
+    public UnityEvent GetSecondPassedEnrageEvent() => GetBossEnragedSecondPassedEnrageEvent;
     #endregion
 
     #region Setters
