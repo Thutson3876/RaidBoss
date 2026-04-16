@@ -60,6 +60,10 @@ public abstract class SpecificBossAbilityFramework : MonoBehaviour
     protected BossBase _myBossBase;
     protected SpecificBossFramework _mySpecificBoss;
 
+    protected bool _wasBossEnragedOnAbilityActivation = false;
+    protected bool _isSubscribedToEvents;
+    protected bool _isAbilityEnabled = false;
+
     /// <summary>
     /// Sets up the ability with the boss base and specific boss framework
     /// </summary>
@@ -93,6 +97,12 @@ public abstract class SpecificBossAbilityFramework : MonoBehaviour
         }
 
         SetUpAbilityAudioDelays();
+        SubscribeToEvents();
+    }
+
+    protected virtual void OnDestroy()
+    {
+        UnsubscribeFromEvents();
     }
 
     /// <summary>
@@ -102,6 +112,8 @@ public abstract class SpecificBossAbilityFramework : MonoBehaviour
     /// <param name="targetLocation"></param>
     public virtual void ActivateAbility(Vector3 targetLocation, HeroBase targetHeroBase)
     {
+        _wasBossEnragedOnAbilityActivation = BossStats.Instance.GetIsBossEnraged();
+        
         _storedTargetLocation = targetLocation;
         if (!targetHeroBase.IsUnityNull())
         {
@@ -325,6 +337,26 @@ public abstract class SpecificBossAbilityFramework : MonoBehaviour
         StopAbilityDuration();
     }
 
+    public virtual void SubscribeToEvents()
+    {
+        if (_isSubscribedToEvents)
+        {
+            return;
+        }
+        
+        _isSubscribedToEvents = true;
+    }
+
+    public virtual void UnsubscribeFromEvents()
+    {
+        if (!_isSubscribedToEvents)
+        {
+            return;
+        }
+        
+        _isSubscribedToEvents = false;
+    }
+
     #region AbilityAudio
 
     protected virtual void SetUpAbilityAudioDelays()
@@ -473,6 +505,15 @@ public abstract class SpecificBossAbilityFramework : MonoBehaviour
 
     public float GetTimeUntilNextAbility() => _timeUntilNextAbility;
     public float GetAbilityWindUpTime() => _abilityWindUpTime;
+
+    #endregion
+
+    #region Setters
+
+    public void SetIsAbilityActive(bool active)
+    {
+        _isAbilityEnabled = active;
+    }
 
     #endregion
 }

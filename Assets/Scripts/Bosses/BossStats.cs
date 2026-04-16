@@ -41,6 +41,7 @@ public class BossStats : BossChildrenFunctionality
     private float _currentTimeUntilEnrage;
     private float _enrageMaxTime;
     private float _timeUntilEnrageProgress = 0;
+    private float _timeSpentEnraged = 0;
     private Coroutine _enrageCoroutine;
     
     [SerializeField] private float _bossEnrageWarningTime;
@@ -319,24 +320,47 @@ public class BossStats : BossChildrenFunctionality
         _isBossEnraged = true;
         _bossEnrageDamageMultiplier = _storedEnrageMultiplier;
         _myBossBase.InvokeBossEnragedEvent();
+        _myBossBase.InvokeBossEnrageSecondPassedEvent();
         
         AudioManager.Instance.PlaySpecificAudio(AudioManager.Instance.GeneralBossAudio.EnrageAudio.BossEnrageStarted);
 
-        StartScalingEnrageMultiplier();
+        _timeSpentEnraged = 0;
+        StartScalingEnrageProcess();
     }
 
-    private void StartScalingEnrageMultiplier()
+    private void StartScalingEnrageProcess()
     {
-        StartCoroutine(ScalingEnrageMultiplierProcess());
+        StartCoroutine(ScalingEnrageProcess());
     }
 
-    private IEnumerator ScalingEnrageMultiplierProcess()
+    private IEnumerator ScalingEnrageProcess()
     {
+        float secondCounter = 0;
         while (true)
         {
-            _storedScalingEnrageDamageMultiplier += _scalingEnrageDamageMultiplierScaleRate * Time.deltaTime;
+            _timeSpentEnraged += Time.deltaTime;
+            secondCounter += Time.deltaTime;
+
+            while (secondCounter > 1)
+            {
+                secondCounter -= 1;
+                SecondPassedEnraged();
+            }
+            
             yield return null;
         }
+    }
+
+    private void SecondPassedEnraged()
+    {
+        CalculateScalingEnrageDamageMultiplier();
+        
+        _myBossBase.InvokeBossEnrageSecondPassedEvent();
+    }
+
+    private void CalculateScalingEnrageDamageMultiplier()
+    {
+        _storedScalingEnrageDamageMultiplier = 1 + _scalingEnrageDamageMultiplierScaleRate * _timeSpentEnraged;
     }
     #endregion
 
@@ -404,6 +428,8 @@ public class BossStats : BossChildrenFunctionality
 
     public bool GetIsBossStaggered() => _isBossStaggered;
     public bool GetIsBossEnraged() => _isBossEnraged;
+    public float GetSecondsSpentEnraged() => _timeSpentEnraged;
+    public float GetMinutesSpentEnraged() => _timeSpentEnraged / 60f;
     
     public float GetBaseBossDamageMultiplier() => _baseBossDamageMultiplier;
 
