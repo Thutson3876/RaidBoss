@@ -95,6 +95,14 @@ public class GeneralVFXFunctionality : MonoBehaviour
             ps.Play();
         }
     }
+
+    public void StopAllParticleSystems()
+    {
+        foreach (ParticleSystem ps in _particleSystems)
+        {
+            ps.Stop();
+        }
+    }
     
     public void SetLoopOfParticleSystems(bool shouldLoop)
     {
@@ -105,6 +113,24 @@ public class GeneralVFXFunctionality : MonoBehaviour
         }
     }
 
+    public void SetStartColor(Color firstStartColor)
+    {
+        foreach(ParticleSystem ps in _particleSystems)
+        {
+            ParticleSystem.MainModule main = ps.main;
+            main.startColor = new ParticleSystem.MinMaxGradient(firstStartColor);
+        }
+    }
+    
+    public void SetStartColor(Color firstStartColor, Color secondStartColor)
+    {
+        foreach(ParticleSystem ps in _particleSystems)
+        {
+            ParticleSystem.MainModule main = ps.main;
+            main.startColor = new ParticleSystem.MinMaxGradient(firstStartColor, secondStartColor);
+        }
+    }
+    
     public void SetEmissionShapeScale(Vector3 emissionShapeScale)
     {
         foreach(ParticleSystem ps in _particleSystems)

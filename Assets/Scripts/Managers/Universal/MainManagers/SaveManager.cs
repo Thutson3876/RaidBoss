@@ -66,8 +66,11 @@ public class SaveManager : MainUniversalManagerFramework
 
         ResetBossHeroDifficultyDictionary();
 
+        GSD.GetGeneralSaveData().SetGSDDoesShowHeroControlInputUI(true);
+        GSD.GetGeneralSaveData().SetGSDDoesShowHeroManualInputUI(true);
+
         GSD.GetGeneralSaveData().SetGSDScreenShakeStrength(1);
-        GSD.GetGeneralSaveData().SetGSDBossTargetZoneOutlineStrength(.5f);
+        GSD.GetGeneralSaveData().SetGSDBossTargetZoneOutlineStrength(.2f);
         GSD.GetGeneralSaveData().SetGSDHeroClickAndDrag(false);
 
         GSD.GetGeneralSaveData().SetGSDMasterVolume(.5f);
@@ -191,6 +194,8 @@ public class SaveManager : MainUniversalManagerFramework
     {
         PopulateBossHeroDifficultyDictionary();
         UpdateMissionUnlocksFromOldSaveData();
+        
+        GSD.GetGeneralSaveData().SetGameVersion(Application.version);
     }
 
     private void UpdateMissionUnlocksFromOldSaveData()
@@ -385,6 +390,18 @@ public class SaveManager : MainUniversalManagerFramework
     }
     #endregion
     
+    #region Difficulty Unlocks
+
+    public void UnlockDifficulty(EGameDifficulty gameDifficulty)
+    {
+        if (gameDifficulty < GSD.GetGameplaySaveData().GetHighestGameDifficultyUnlocked())
+        {
+            return;
+        }
+        GSD.GetGameplaySaveData().SetHighestDifficultyUnlocked(gameDifficulty);
+    }
+    #endregion
+    
     #region Mission Modifier Unlocks
 
     public void UnlockMissionModifier(MissionModifierSO missionModifier)
@@ -438,12 +455,16 @@ public class SaveManager : MainUniversalManagerFramework
         AddMissionAsComplete(mission);
 
         UnlockCharacterFromMission(mission);
+
+        UnlockDifficultyFromMission(mission);
         
         UnlockMissionModifierFromMission(mission);
 
         UnlockMissionsFromMission(mission);
 
         UnlockAchievementsFromMission(mission);
+
+        UnlockGeneralUnlockFromMission(mission);
         
         SaveText();
     }
@@ -456,6 +477,11 @@ public class SaveManager : MainUniversalManagerFramework
     public void UnlockCharacterFromMission(MissionSO mission)
     {
         UnlockCharacter(mission.GetCharacterUnlock());
+    }
+
+    public void UnlockDifficultyFromMission(MissionSO mission)
+    {
+        UnlockDifficulty(mission.GetDifficultyUnlock());
     }
 
     public void UnlockMissionModifierFromMission(MissionSO mission)
@@ -482,6 +508,14 @@ public class SaveManager : MainUniversalManagerFramework
         for (int i = 0; i < achievementUnlocks.Length; i++)
         {
             AchievementManager.Instance.UnlockAchievement(achievementUnlocks[i]);
+        }
+    }
+
+    public void UnlockGeneralUnlockFromMission(MissionSO mission)
+    {
+        if (!mission.GetHasGeneralMissionUnlock())
+        {
+            return;
         }
     }
     #endregion
@@ -552,6 +586,16 @@ public class SaveManager : MainUniversalManagerFramework
     
     public bool IsMissionUnlocked(MissionSO missionSO) => GSD.GetGameplaySaveData().GetMissionsUnlocked().Contains(missionSO.GetMissionID());
     public bool IsMissionCompleted(MissionSO missionSO) => GSD.GetGameplaySaveData().GetMissionsComplete().Contains(missionSO.GetMissionID());
+
+    public bool IsCurrentMissionComplete()
+    {
+        if (SelectionManager.Instance.GetSelectedMissionOut(out MissionSO mission))
+        {
+            return GSD.GetGameplaySaveData().GetMissionsComplete().Contains(mission.GetMissionID());
+        }
+
+        return false;
+    }
     
     public bool IsMissionModifierUnlocked(MissionModifierSO missionModifierSO) => GSD.GetGameplaySaveData()
         .MissionModifiersUnlocked.Contains(missionModifierSO.GetModifierID());
@@ -583,8 +627,14 @@ public class SaveManager : MainUniversalManagerFramework
 
     public int GetHighestMythicPlusLevelUnlocked() => GSD.GetGameplaySaveData().GetHighestMythicPlusLevelUnlocked();
 
+    public EGameDifficulty GetHighestDifficultyUnlocked() =>
+        GSD.GetGameplaySaveData().GetHighestGameDifficultyUnlocked();
+    
     public bool IsFreePlayUnlocked() => GSD.GetGameplaySaveData().HeroesUnlocked.Count >= HEROES_REQUIRED_FOR_FREE_PLAY;
 
+
+    public bool GetDoesShowHeroControlInputUI() => GSD.GetGeneralSaveData().GetGSDDoesShowHeroControlInputUI();
+    public bool GetDoesShowHeroManualInputUI() => GSD.GetGeneralSaveData().GetGSDDoesShowHeroManualInputUI();
     public float GetScreenShakeIntensity() => GSD.GetGeneralSaveData().GetGSDScreenShakeStrength();
     public float GetBossTargetZoneOutlineStrength() => GSD.GetGeneralSaveData().GetGSDBossTargetZoneOutlineStrength();
     public float GetBossTargetZoneOutlineStrengthScaled() => 
@@ -615,6 +665,19 @@ public class SaveManager : MainUniversalManagerFramework
     #endregion
 
     #region Setters
+
+    public void SetDoesShowHeroControlInputUI(bool doesShow)
+    {
+        GSD.GetGeneralSaveData().SetGSDDoesShowHeroControlInputUI(doesShow);
+        SaveText();
+    }
+    
+    public void SetDoesShowHeroManualInputUI(bool doesShow)
+    {
+        GSD.GetGeneralSaveData().SetGSDDoesShowHeroManualInputUI(doesShow);
+        SaveText();
+    }
+    
     /// <summary>
     /// Saves the current screen shake intensity into the game save data
     /// </summary>
@@ -726,6 +789,8 @@ public class GameplaySaveData
     
     public int CurrentDifficultySelected = 1;
     public int CurrentMythicPlusLevelSelected = 0;
+
+    public int HighestDifficultyUnlocked = 1;
     public int HighestMythicPlusLevelUnlocked = 0;
     
     public void ResetGameplaySaveData()
@@ -741,6 +806,7 @@ public class GameplaySaveData
         
         BossHeroBestDifficultyComplete = new();
 
+        HighestDifficultyUnlocked = 1;
         HighestMythicPlusLevelUnlocked = 0;
     }
     
@@ -759,6 +825,9 @@ public class GameplaySaveData
     
     public int GetCurrentDifficultySelected() => CurrentDifficultySelected;
     public int GetCurrentMythicPlusLevelSelected() => CurrentMythicPlusLevelSelected;
+    
+    public int GetHighestDifficultyIDUnlocked() => HighestDifficultyUnlocked;
+    public EGameDifficulty GetHighestGameDifficultyUnlocked() => (EGameDifficulty)HighestDifficultyUnlocked;
     public int GetHighestMythicPlusLevelUnlocked() => HighestMythicPlusLevelUnlocked;
     #endregion
     
@@ -784,6 +853,11 @@ public class GameplaySaveData
         CurrentMythicPlusLevelSelected = mythicPlusLevel;
     }
     
+    public void SetHighestDifficultyUnlocked(int difficulty) => HighestDifficultyUnlocked = difficulty;
+    public void SetHighestDifficultyUnlocked(EGameDifficulty difficulty)
+    {
+        HighestDifficultyUnlocked = (int)difficulty;
+    } 
     public void SetHighestMythicPlusLevelUnlocked(int level) => HighestMythicPlusLevelUnlocked = level;
     #endregion
 }
@@ -793,12 +867,17 @@ public class GameplaySaveData
 [System.Serializable]
 public class GeneralSaveData
 {
-    public string GameVersion; 
+    public string GameVersion;
+
+    [Space] 
+    [Header("Settings")] 
+    public bool DoesShowHeroControlInputUI = true;
+    public bool DoesShowHeroManualInputUI = true;
     
-    [Space]
-    [Header("Settings")]
     public float ScreenShakeStrength = 1;
-    public float BossTargetZoneOutlineStrength = .5f;
+    
+    public float BossTargetZoneOutlineStrength = .2f;
+    
     private bool HeroClickAndDragMovementEnabled;
 
     [Range(0, 1)] public float MasterVolume = .5f;
@@ -811,6 +890,9 @@ public class GeneralSaveData
     
     #region Getters
     public string GetGameVersion() => GameVersion;
+    
+    public bool GetGSDDoesShowHeroControlInputUI() => DoesShowHeroControlInputUI;
+    public bool GetGSDDoesShowHeroManualInputUI() => DoesShowHeroManualInputUI;
     
     public float GetGSDScreenShakeStrength() => ScreenShakeStrength;
     public float GetGSDBossTargetZoneOutlineStrength() => BossTargetZoneOutlineStrength;
@@ -827,6 +909,16 @@ public class GeneralSaveData
     public void SetGameVersion(string gameVersion)
     {
         GameVersion = gameVersion;
+    }
+
+    public void SetGSDDoesShowHeroControlInputUI(bool showUI)
+    {
+        DoesShowHeroControlInputUI = showUI;
+    }
+
+    public void SetGSDDoesShowHeroManualInputUI(bool showUI)
+    {
+        DoesShowHeroManualInputUI = showUI;
     }
     
     public void SetGSDScreenShakeStrength(float screenShake)

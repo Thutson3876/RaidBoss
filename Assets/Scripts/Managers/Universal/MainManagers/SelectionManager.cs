@@ -421,7 +421,7 @@ public class SelectionManager : MainUniversalManagerFramework
 
     public float GetDamageMultiplierFromMythicPlusLevel()
     {
-        if (_currentMythicPlusLevel == 0)
+        if (_currentEGameDifficulty != EGameDifficulty.MythicPlus || _currentMythicPlusLevel == 0)
         {
             return 1;
         }
@@ -436,7 +436,7 @@ public class SelectionManager : MainUniversalManagerFramework
 
     public float GetSpeedMultiplierFromMythicPlusLevel()
     {
-        if (_currentMythicPlusLevel == 0)
+        if (_currentEGameDifficulty != EGameDifficulty.MythicPlus || _currentMythicPlusLevel == 0)
         {
             return 1;
         }
@@ -451,7 +451,7 @@ public class SelectionManager : MainUniversalManagerFramework
     
     public float GetHealthMultiplierFromMythicPlusLevel()
     {
-        if (_currentMythicPlusLevel == 0)
+        if (_currentEGameDifficulty != EGameDifficulty.MythicPlus ||_currentMythicPlusLevel == 0)
         {
             return 1;
         }
@@ -466,7 +466,7 @@ public class SelectionManager : MainUniversalManagerFramework
     
     public float GetStaggerMultiplierFromMythicPlusLevel()
     {
-        if (_currentMythicPlusLevel == 0)
+        if (_currentEGameDifficulty != EGameDifficulty.MythicPlus || _currentMythicPlusLevel == 0)
         {
             return 1;
         }
@@ -526,7 +526,8 @@ public class SelectionManager : MainUniversalManagerFramework
     public int GetMythicPlusLevel() => _currentMythicPlusLevel;
 
     public bool GetIsAtHighestMythicPlusLevel() =>
-        _currentMythicPlusLevel == SaveManager.Instance.GetHighestMythicPlusLevelUnlocked();
+        _currentMythicPlusLevel == SaveManager.Instance.GetHighestMythicPlusLevelUnlocked() &&
+        _currentEGameDifficulty == EGameDifficulty.MythicPlus;
 
     public bool IsPlayingMythicPlusLevelsAboveZero()
     {
@@ -543,7 +544,7 @@ public class SelectionManager : MainUniversalManagerFramework
     
     public List<HeroSO> GetAllSelectedHeroes() => _selectedHeroes;
     public HeroSO GetHeroAtValue(int val) => _selectedHeroes[val];
-    public HeroSO GetHeroAtLastPostion() => GetHeroAtValue(GetSelectedHeroesCount() - 1);
+    public HeroSO GetHeroAtLastPosition() => GetHeroAtValue(GetSelectedHeroesCount() - 1);
     public float GetHeroSelectionProgress() => (float)_selectedHeroes.Count / GetHeroLimitFromDifficulty();
     public int GetSelectedHeroesCount() => _selectedHeroes.Count;
     public int GetDefaultMaxHeroesCount() => _maxHeroes;
@@ -554,6 +555,47 @@ public class SelectionManager : MainUniversalManagerFramework
     public EGameMode GetSelectedGameMode() => _currentGameMode;
     public bool IsPlayingMissionsMode() => _currentGameMode == EGameMode.Missions;
     public bool IsPlayingFreeMode() => _currentGameMode == EGameMode.Free;
+
+    public bool DoesCurrentCombatHaveUnlock()
+    {
+        if (IsPlayingMissionsMode())
+        {
+            if (GameStateManager.Instance.GetIsCurrentMissionAlreadyComplete())
+            {
+                return false;
+            }
+            
+            CharacterSO characterSO = _currentSelectedMission.GetCharacterUnlock();
+            if (!characterSO.IsUnityNull())
+            {
+                return true;
+            }
+
+            if (_currentSelectedMission.GetIsDifficultyUnlockNotEmpty())
+            {
+                return true;
+            }
+
+            if (!_currentSelectedMission.GetMissionModifierUnlock().IsUnityNull())
+            {
+                return true;
+            }
+
+            if (_currentSelectedMission.GetHasGeneralMissionUnlock())
+            {
+                return true;
+            }
+        }
+        else if (IsPlayingFreeMode())
+        {
+            if (GameStateManager.Instance.GetIsCurrentBattleAtHighestMythicPlusLevel())
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
     
 
     public UnityEvent<BossSO> GetBossSelectionEvent() => _bossSelectionEvent;

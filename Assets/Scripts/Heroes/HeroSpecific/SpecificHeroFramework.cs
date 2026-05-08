@@ -19,8 +19,14 @@ public abstract class SpecificHeroFramework : MonoBehaviour
 
     [SerializeField] protected float _manualAbilityChargeTime;
 
-    /*[SerializeField] protected bool _doesManualAbilityHaveDuration;
-    [SerializeField] protected float _manualAbilityDuration;*/
+    [SerializeField] protected bool _doesManualAbilityHaveDuration;
+    [SerializeField] protected bool _doesManualAbilityChargeWhileActive;
+
+    [Space] 
+    [SerializeField] protected bool _isManualAbilityDurationFixed;
+    [SerializeField] protected float _manualAbilityFixedDuration;
+    protected WaitForSeconds _manualAbilityFixedWait;
+    
     protected float _manualAbilityCurrentCharge = 0;
     
     protected bool _isManualAbilityActive = false;
@@ -182,6 +188,11 @@ public abstract class SpecificHeroFramework : MonoBehaviour
         {
             _manualAbilityChargeTime *= missionStatModifiers.GetHeroManualCooldownTimeMultiplier();
         }
+
+        if (_isManualAbilityDurationFixed)
+        {
+            _manualAbilityFixedWait = new WaitForSeconds(_manualAbilityFixedDuration);
+        }
     }
     
     /// <summary>
@@ -209,6 +220,14 @@ public abstract class SpecificHeroFramework : MonoBehaviour
             yield return null;
         }
 
+        if (!_isManualAbilityActive)
+        {
+            ManualAbilityFullyCharged();
+        }
+    }
+
+    public virtual void ManualAbilityFullyCharged()
+    {
         _myHeroBase.InvokeHeroManualAbilityFullyChargedEvent();
     }
 
@@ -220,7 +239,7 @@ public abstract class SpecificHeroFramework : MonoBehaviour
 
     public virtual void AttemptActivationOfManualAbility()
     {
-        if(_manualAbilityCurrentCharge >= _manualAbilityChargeTime)
+        if(_manualAbilityCurrentCharge >= _manualAbilityChargeTime && !_isManualAbilityActive)
         {
             ActivateManualAbilities();
         }
@@ -261,14 +280,45 @@ public abstract class SpecificHeroFramework : MonoBehaviour
         
         PlayManualAbilityAudio();
 
-        StartCooldownManualAbility();
-
         _myHeroBase.InvokeHeroManualAbilityUsedEvent();
+
+        if (_doesManualAbilityHaveDuration)
+        {
+            if (_isManualAbilityDurationFixed)
+            {
+                StartCoroutine(FixedManualAbilityDuration());
+            }
+            
+            if (_doesManualAbilityChargeWhileActive)
+            {
+                StartCooldownManualAbility();
+            }
+        }
+        else
+        {
+            EndManualAbility();
+        }
+    }
+
+    public virtual IEnumerator FixedManualAbilityDuration()
+    {
+        yield return _manualAbilityFixedWait;
+        
+        EndManualAbility();
     }
 
     public virtual void EndManualAbility()
     {
         _isManualAbilityActive = false;
+
+        if (_manualAbilityCurrentCharge >= _manualAbilityChargeTime)
+        {
+            ManualAbilityFullyCharged();
+        }
+        else if (!_doesManualAbilityChargeWhileActive)
+        {
+            StartCooldownManualAbility();
+        }
     }
     #endregion
 
