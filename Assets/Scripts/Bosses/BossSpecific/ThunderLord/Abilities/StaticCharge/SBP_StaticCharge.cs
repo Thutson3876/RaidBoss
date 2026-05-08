@@ -6,7 +6,12 @@ public class SBP_StaticCharge : BossProjectileFramework
 {
     [SerializeField] private float _damageToFollowTargetOnSwap;
     [SerializeField] private int _maxSwaps;
+    [SerializeField] private int _enrageMaxSwapIncrease;
     private int _currentSwaps = 0;
+
+    [Space]
+    [SerializeField] private float _projectileDuration;
+    [SerializeField] private float _enrageDurationIncrease;
     private bool _isDurationOver = false;
 
     [Space] 
@@ -42,7 +47,14 @@ public class SBP_StaticCharge : BossProjectileFramework
         _moveInWait = new WaitForSeconds(_moveIntoHeroTime);
         _moveOutWait = new WaitForSeconds(_moveOutFromHeroTime);
         _moveOutColliderEnableWait = new WaitForSeconds(_moveOutColliderEnableDelay);
-        
+
+        if (_wasBossEnragedOnAbilityActivation)
+        {
+            _maxSwaps += _enrageMaxSwapIncrease;
+            _projectileDuration += _enrageDurationIncrease;
+        }
+        _damageArea.SetProjectileColliderLifeTime(_projectileDuration);
+        _damageArea.StartColliderLifetime();
         _damageArea.ToggleProjectileCollider(false);
 
         StartMoveOutFromHero();
@@ -50,7 +62,6 @@ public class SBP_StaticCharge : BossProjectileFramework
     
     public void StaticChargeHit(HeroBase heroTarget)
     {
-        Debug.Log("Hit Hero " +  _currentSwaps);
         _currentSwaps++;
         _previousTarget = _currentTarget;
         _currentTarget = heroTarget;

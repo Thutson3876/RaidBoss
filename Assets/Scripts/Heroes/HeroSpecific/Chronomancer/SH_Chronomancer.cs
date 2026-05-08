@@ -25,7 +25,6 @@ public class SH_Chronomancer : SpecificHeroFramework
     [SerializeField] private float _rewindTimeAmount;
 
     [SerializeField] private float _manualTimeVariationAmount;
-    [SerializeField] private float _manualTimeVariationDuration;
     
     [SerializeField] private GameObject _manualProjectile;
     private WaitForSeconds _rewindWait;
@@ -39,6 +38,15 @@ public class SH_Chronomancer : SpecificHeroFramework
     
     [Space]
     [SerializeField] private float _passiveAbilityBasicCooldownReduction;
+    [SerializeField] private float _passiveAbilityManualCooldownReduction;
+
+    [Space]
+    [SerializeField] private float _passiveAbilityBasicCooldownSpeedIncrease;
+    [SerializeField] private float _passiveAbilityManualCooldownSpeedIncrease;
+    [SerializeField] private float _passiveAbilityCooldownSpeedDuration;
+    private WaitForSeconds _passiveAbilityBasicCooldownSpeedWait;
+
+    [SerializeField] private GameObject _passiveTargetHeroVisualEffect;
 
     /* Code is here to test the storing of data for the manual ability
     private void Update()
@@ -137,7 +145,7 @@ public class SH_Chronomancer : SpecificHeroFramework
     {
         base.ActivateManualAbilities();
         
-        TimeManager.Instance.AddNewTimeVariationForDuration(_manualTimeVariationAmount,_manualTimeVariationDuration);
+        TimeManager.Instance.AddNewTimeVariationForDuration(_manualTimeVariationAmount,_manualAbilityFixedDuration);
         
         Instantiate(_manualProjectile, Vector3.zero, Quaternion.identity);
         
@@ -223,6 +231,16 @@ public class SH_Chronomancer : SpecificHeroFramework
     private void AddHeroHealthValue(HeroBase heroBase)
     {
         AddHeroHealthValue(heroBase.GetHeroID());
+    }
+
+    private void AddHeroHealthValueDamage(HeroBase heroBase, float damageValue)
+    {
+        AddHeroHealthValue(heroBase);
+    }
+
+    private void AddHeroHealthValueHealing(HeroBase heroBase, float healingValue)
+    {
+        AddHeroHealthValue(heroBase);
     }
 
     private void RemoveSpecificHeroValues(HeroBase heroBase)
@@ -324,6 +342,7 @@ public class SH_Chronomancer : SpecificHeroFramework
         }
         InvokeOnStoredHealingUpdated(total);
     }
+
     #endregion
 
     #region Passive Abilities
@@ -340,21 +359,40 @@ public class SH_Chronomancer : SpecificHeroFramework
     /// <param name="heroBase"></param>
     public void PassiveReduceBasicCooldownOfHero(HeroBase heroBase)
     {
+        FollowObject passiveEffect = 
+            Instantiate(_passiveTargetHeroVisualEffect,heroBase.transform.position,Quaternion.identity).GetComponent<FollowObject>();
+        
+        passiveEffect.StartFollowingObject(heroBase.gameObject);
+        
         heroBase.GetSpecificHeroScript().AddToBasicAbilityChargeTime(_passiveAbilityBasicCooldownReduction);
+        heroBase.GetSpecificHeroScript().AddToManualAbilityChargeTime(_passiveAbilityManualCooldownReduction);
+
+        StartCoroutine(PassiveAttackSpeedIncreaseBuff(heroBase));
+    }
+
+    private IEnumerator PassiveAttackSpeedIncreaseBuff(HeroBase heroBase)
+    {
+        heroBase.GetHeroStats().ChangeCurrentBasicAbilityCooldownRate(_passiveAbilityBasicCooldownSpeedIncrease);
+        heroBase.GetHeroStats().ChangeCurrentManualAbilityCooldownRate(_passiveAbilityManualCooldownSpeedIncrease);
+
+        yield return _passiveAbilityBasicCooldownSpeedWait;
+        
+        heroBase.GetHeroStats().ChangeCurrentBasicAbilityCooldownRate(1/_passiveAbilityBasicCooldownSpeedIncrease);
+        heroBase.GetHeroStats().ChangeCurrentManualAbilityCooldownRate(1/_passiveAbilityManualCooldownSpeedIncrease);
     }
     #endregion
     
     
     public void SubscribeToHeroesDamagedEvents()
     {
-        HeroesManager.Instance.GetOnHeroDamagedEvent().AddListener(AddHeroHealthValue);
-        HeroesManager.Instance.GetOnHeroHealedEvent().AddListener(AddHeroHealthValue);
+        HeroesManager.Instance.GetOnHeroDamagedEvent().AddListener(AddHeroHealthValueDamage);
+        HeroesManager.Instance.GetOnHeroHealedEvent().AddListener(AddHeroHealthValueHealing);
     }
 
     private void UnsubscribeToHeroesDamagedEvents()
     {
-        HeroesManager.Instance.GetOnHeroDamagedEvent().RemoveListener(AddHeroHealthValue);
-        HeroesManager.Instance.GetOnHeroHealedEvent().RemoveListener(AddHeroHealthValue);
+        HeroesManager.Instance.GetOnHeroDamagedEvent().RemoveListener(AddHeroHealthValueDamage);
+        HeroesManager.Instance.GetOnHeroHealedEvent().RemoveListener(AddHeroHealthValueHealing);
     }
 
     #region Base Hero
@@ -363,6 +401,7 @@ public class SH_Chronomancer : SpecificHeroFramework
         base.BattleStarted();
 
         _rewindWait = new WaitForSeconds(_rewindTimeAmount);
+        _passiveAbilityBasicCooldownSpeedWait = new WaitForSeconds(_passiveAbilityCooldownSpeedDuration);
         
         //Adds the current health of all heroes to the list of queues
         AddStartingHealthValues();
@@ -371,6 +410,8 @@ public class SH_Chronomancer : SpecificHeroFramework
 
         //Listens for all damage taken by heroes
         SubscribeToHeroesDamagedEvents();
+
+        SetUpPassiveAbility();
     }
 
     public override void HeroSpecificUICreated(GameObject heroSpecificUI)

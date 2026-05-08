@@ -28,6 +28,9 @@ public class MissionSO : ScriptableObject
     [SerializeField] private CharacterSO _characterUnlock;
 
     [Space] 
+    [SerializeField] private EGameDifficulty _difficultyUnlock;
+    
+    [Space] 
     [SerializeField] private MissionModifierSO _missionModifierUnlock;
 
     [Space] 
@@ -35,6 +38,9 @@ public class MissionSO : ScriptableObject
 
     [Space]
     [SerializeField] private AchievementSO[] _achievementUnlocks;
+    
+    [Space]
+    [SerializeField] private EGeneralMissionUnlocks _generalMissionUnlocks;
 
     [Space] 
     [Header("Modifiers")]
@@ -57,9 +63,13 @@ public class MissionSO : ScriptableObject
     public TutorialPage[] GetTutorialPages() => _tutorialPages;
     
     public CharacterSO GetCharacterUnlock() =>_characterUnlock;
+    public EGameDifficulty GetDifficultyUnlock() =>_difficultyUnlock;
+    public bool GetIsDifficultyUnlockNotEmpty() => _difficultyUnlock != EGameDifficulty.Empty;
     public MissionModifierSO GetMissionModifierUnlock() =>_missionModifierUnlock;
     public MissionSO[] GetMissionUnlocks() =>_missionUnlocks;
     public AchievementSO[] GetAchievementUnlocks() =>_achievementUnlocks;
+    public EGeneralMissionUnlocks GetGeneralMissionUnlocks() =>_generalMissionUnlocks;
+    public bool GetHasGeneralMissionUnlock() => _generalMissionUnlocks != EGeneralMissionUnlocks.None;
     
     public MissionModifierSO[] GetMissionModifiers() =>_missionModifiers;
     public MissionStatModifiers GetMissionStatModifiers() =>_missionStatModifiers;
@@ -110,7 +120,7 @@ public class TutorialPage
 
     [Space]
     public Vector2 DefaultTextLocation;
-    [TextArea(1, 10)]public string DefaultText;
+    [TextArea(1, 12)]public string DefaultText;
 
     [Space] 
     public Vector2 TutorialPageObjectLocation;
@@ -149,3 +159,9 @@ public enum EMissionDisplayHighlightType
     Hero,
     MissionModifier
 };
+
+public enum EGeneralMissionUnlocks
+{
+    None,
+    FreePlay
+}

@@ -26,8 +26,10 @@ public class HeroVisuals : HeroChildrenFunctionality
 
     [Space] 
     [SerializeField] private Animator _heroNotControllerNumberAnimator;
-    [SerializeField] private Text _heroNotControllerNumberTextBackground;
-    [SerializeField] private TMP_Text _heroNotControllerNumberText;
+    [SerializeField] private TextWithBackground _heroNotControlledNumberText;
+
+    [Space] 
+    [SerializeField] private TextWithBackground _heroManualAbilityInputText;
 
     [Space]
     [SerializeField] private RectTransform _heroGeneralOrigin;
@@ -47,8 +49,6 @@ public class HeroVisuals : HeroChildrenFunctionality
 
     private const string SHOW_RECENT_HEALTH_POP_UP_ANIM_TRIGGER = "PopUpRecentHealth";
     private const string RECENT_HEALTH_POP_UP_HEALTH_STATUS_ANIM_TRIGGER = "PopUpHealthStatus";
-
-    private const string GROUND_HEALTH_STATUS_ANIM_INT = "HealthStatus";
 
     [Space]
     [SerializeField] private Animator _heroGeneralAnimator;
@@ -133,6 +133,11 @@ public class HeroVisuals : HeroChildrenFunctionality
         return 1 + _scaleCurve.Evaluate(percent);
     }
 
+    public void HeroVisualsRemovedPostDeath()
+    {
+        _myHeroBase.DestroyHero();
+    }
+    
     private void HeroDied()
     {
         _floorFollowIcons.StopFollowing(true);
@@ -147,19 +152,16 @@ public class HeroVisuals : HeroChildrenFunctionality
     
     private void HeroHealthAboveHalf()
     {
-        //_healthStatusIcon.GetComponent<Animator>().SetInteger(GROUND_HEALTH_STATUS_ANIM_INT, 0);
         SetHealthPopUpCriticalStatus(0);
     }
 
     private void HeroInjured()
     {
-        //_healthStatusIcon.GetComponent<Animator>().SetInteger(GROUND_HEALTH_STATUS_ANIM_INT, 1);
         SetHealthPopUpCriticalStatus(1);
     }
 
     private void HeroCritical()
     {
-        //_healthStatusIcon.GetComponent<Animator>().SetInteger(GROUND_HEALTH_STATUS_ANIM_INT, 2);
         SetHealthPopUpCriticalStatus(2);
     }
 
@@ -373,7 +375,9 @@ public class HeroVisuals : HeroChildrenFunctionality
         _addedOutline = _myHeroBase.GetAssociatedHeroObject().AddComponent<Outline>();
 
         _addedOutline.OutlineWidth = _outlineWidth;
-        _addedOutline.OutlineColor = heroSO.GetHeroOutlineColor();
+        Color outlineColor = heroSO.GetHeroOutlineColor();
+        _addedOutline.OutlineColor = outlineColor;
+        
         _addedOutline.OutlineMode = _outlineMode;
     }
 
@@ -438,8 +442,8 @@ public class HeroVisuals : HeroChildrenFunctionality
     public Image GetHeroControlledIcon() => _heroControlledIcon;
 
     public Animator GetHeroNotControlledNumberAnimator() => _heroNotControllerNumberAnimator;
-    public Text GetHeroNotControlledNumberTextBackground() => _heroNotControllerNumberTextBackground;
-    public TMP_Text GetHeroNotControlledNumberText() => _heroNotControllerNumberText;
+    public TextWithBackground GetHeroNotControlledNumberText() => _heroNotControlledNumberText;
+    public TextWithBackground GetHeroManualAbilityInputText() => _heroManualAbilityInputText;
 
     public RectTransform GetGeneralOrigin() => _heroGeneralOrigin;
     public RectTransform GetDamageNumbersOrigin() => _damageNumbersOrigin;

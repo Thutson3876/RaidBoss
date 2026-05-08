@@ -121,8 +121,9 @@ public class BossStats : BossChildrenFunctionality
         //Sets the starting health and stagger values
         _currentHealth = _bossMaxHealth;
         _currentStaggerCounter = 0;
-        
-        //Debug.Log("Stats:    health: " + _currentHealth + "    stagger: " + _bossDefaultStaggerMax + "    damage: " + _baseBossDamageMultiplier);
+
+        _storedEnrageMultiplier += 1;
+        _enrageMaxTime = _currentTimeUntilEnrage;
     }
 #endregion
 
@@ -180,7 +181,7 @@ public class BossStats : BossChildrenFunctionality
 
     private void CheckIfBossIsDead(float damage)
     {
-        if (_currentHealth <= 0)
+        if (_currentHealth <= 0 && !GameStateManager.Instance.GetIsFightOver())
         {
             BossDeath();
         }
@@ -450,6 +451,11 @@ public class BossStats : BossChildrenFunctionality
             return;
         }
         
+        if (damage <= 0)
+        {
+            return;
+        }
+        
         damage /= _bossDamageResistanceMultiplier;
         _currentHealth -= damage;
         _myBossBase.InvokeBossDamagedEvent(damage);
@@ -471,6 +477,12 @@ public class BossStats : BossChildrenFunctionality
         _myBossBase.InvokeBossDamagedEventDetailed(details);
 
         AudioManager.Instance.PlaySpecificAudio(AudioManager.Instance.GeneralBossAudio.HealthStaggerAudio.BossTookDamage);
+
+    }
+    
+    public void DealDamageToBossFromNonHeroSource(float damage)
+    {
+        DealDamageToBoss(damage);
     }
 
     public void DealStaggerToBoss(float stagger)
@@ -481,9 +493,19 @@ public class BossStats : BossChildrenFunctionality
             return;
         }
 
+        if (stagger <= 0)
+        {
+            return;
+        }
+
         _currentStaggerCounter += stagger;
         _myBossBase.InvokeBossStaggerDealt(stagger);
         CheckIfBossIsStaggered();
+    }
+    
+    public void DealStaggerToBossFromNonHeroSource(float damage)
+    {
+        DealStaggerToBoss(damage);
     }
 
     public void DealStaggerToBossDetailed(MeterEventDetails details)
