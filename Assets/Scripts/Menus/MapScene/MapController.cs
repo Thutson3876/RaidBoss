@@ -297,7 +297,6 @@ public class MapController : MonoBehaviour
         {
             return;
         }
-        
 
         _cameraClickAndDragDuration = 0;
         _clickAndDragMouseTotalHorizontalMovement = 0;
@@ -343,7 +342,6 @@ public class MapController : MonoBehaviour
             StopAndResetCameraMoveProcess();
             IncreaseCameraLocation(moveAmount);
         }
-        
         
         _clickAndDragMouseLastHorizontalPosition = Input.mousePosition.x;
     }
@@ -614,6 +612,8 @@ public class MapController : MonoBehaviour
     public List<SelectableMission> GetAllSelectableMissions() => _createdMissions;
 
     public SelectableMission GetSelectedMission() => _currentlySelectedMission;
+
+    public bool GetIsClickAndDraggingCamera() => _isClickingAndDraggingCamera;
 
     #endregion
     

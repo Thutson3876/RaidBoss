@@ -165,6 +165,8 @@ public class SelectionController : MonoBehaviour
     {
         _bossPillar.BossOnPillarDeselected();
 
+        PlayBossDeselectedAudio(bossSO);
+
         CheckMaxCharactersNoLongerSelected();
 
         HideBossBackground();
@@ -378,7 +380,27 @@ public class SelectionController : MonoBehaviour
 
     private void MissionModifierStart()
     {
+        PressStartingSelectedMissionModifiers();
+    }
+
+    private void PressStartingSelectedMissionModifiers()
+    {
+        foreach (MissionModifierSelectionButton modifierSelectionButton in _missionModifierSelectionButtons)
+        {
+            modifierSelectionButton.SetUpMissionModifierSelectionButton();
+        }
         
+        int i;
+        for (i = 0; i < SelectionManager.Instance.GetCurrentMissionModifiers().Count; i++)
+        {
+            _missionModifierSelectionButtons[SelectionManager.Instance.GetCurrentMissionModifiers()[i].GetModifierID()].SetStartingMissionModifierStatusToPressed();
+            _activeMissionModifierSelectionButtons[i].SetStartingMissionModifierStatus(true);
+        }
+
+        for (; i < _activeMissionModifierSelectionButtons.Count; i++)
+        {
+            _activeMissionModifierSelectionButtons[i].SetStartingMissionModifierStatus(false);
+        }
     }
 
     public void MissionModifierHoveredOver(MissionModifierSO missionModifier)
@@ -601,6 +623,12 @@ public class SelectionController : MonoBehaviour
         HideFullBossDescription();
     }
 
+    private void DifficultySelected(EGameDifficulty difficulty)
+    {
+        PlayDifficultySelectedAudio(difficulty);
+        HeroLimitChanged(difficulty);
+    }
+    
     /// <summary>
     /// Causes the game to proceed to the currently selected level
     /// Called by play button press
@@ -937,6 +965,8 @@ public class SelectionController : MonoBehaviour
             MoveHeroPillar(heroPillarNum, false);
         }
 
+        PlayHeroDeselectedAudio(heroSO);
+        
         //Remove the hero on the pillar that had a hero removed
         //_heroPillars[SelectionManager.Instance.GetIndexOfLastHeroRemoved()].RemoveHeroOnPillar();
         // Deselects the hero on the pillar
@@ -1107,6 +1137,12 @@ public class SelectionController : MonoBehaviour
         AudioManager.Instance.PlaySpecificAudio(
             AudioManager.Instance.AllSpecificBossAudio[selectedBoss.GetBossID()].SelectionSelectedAudio);
     }
+
+    private void PlayBossDeselectedAudio(BossSO selectedBoss)
+    {
+        AudioManager.Instance.PlaySpecificAudio(
+            AudioManager.Instance.UserInterfaceAudio.SelectionSceneUserInterfaceAudio.BossDeselected);
+    }
     
     private void PlayHeroSelectedAudio(HeroSO selectedHero)
     {
@@ -1115,6 +1151,18 @@ public class SelectionController : MonoBehaviour
         
         AudioManager.Instance.PlaySpecificAudio(
             AudioManager.Instance.AllSpecificHeroAudio[selectedHero.GetHeroID()].SelectionSelectedAudio);
+    }
+
+    private void PlayHeroDeselectedAudio(HeroSO selectedHero)
+    {
+        AudioManager.Instance.PlaySpecificAudio(
+            AudioManager.Instance.UserInterfaceAudio.SelectionSceneUserInterfaceAudio.HeroDeselected);
+    }
+
+    private void PlayDifficultySelectedAudio(EGameDifficulty difficulty)
+    {
+        AudioManager.Instance.PlaySpecificAudio(
+            AudioManager.Instance.UserInterfaceAudio.SelectionSceneUserInterfaceAudio.DifficultySelected[(int)difficulty-1]);
     }
 
     private void PlayMissionModifierSelectedAudio(MissionModifierSO selectedMissionModifier)
@@ -1168,7 +1216,7 @@ public class SelectionController : MonoBehaviour
         
         SelectionManager.Instance.GetHeroInformationLockedEvent().AddListener(InformationLockHero);
 
-        SelectionManager.Instance.GetDifficultySelectionEvent().AddListener(HeroLimitChanged);
+        SelectionManager.Instance.GetDifficultySelectionEvent().AddListener(DifficultySelected);
         
         SelectionManager.Instance.GetInformationUnlockedEvent().AddListener(UnlockCharacterInformation);
     }
