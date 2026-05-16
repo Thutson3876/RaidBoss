@@ -53,7 +53,16 @@ public class SelectionManager : MainUniversalManagerFramework
     [Space]
     [SerializeField] private List<string> _difficultyNames;
     [SerializeField] private List<Sprite> _difficultyIcons;
+    [SerializeField] private Color[] _difficultyColors;
+    
+    [Space]
+    [SerializeField] private Color _basicAbilityColor;
+    [SerializeField] private Color _manualAbilityColor;
+    [SerializeField] private Color _passiveAbilityColor;
+    [SerializeField] private Color _hybridAbilityColor;
 
+    [SerializeField] private Color _missionModifierColor;
+    
     private Dictionary<EGameDifficulty, float> _difficultyDamageMultiplierDictionary = new();
     private Dictionary<EGameDifficulty, float> _difficultyAttackSpeedMultiplierDictionary = new();
     private Dictionary<EGameDifficulty, float> _difficultyHealthMultiplierDictionary = new();
@@ -92,13 +101,15 @@ public class SelectionManager : MainUniversalManagerFramework
 
     private UnityEvent<EGameDifficulty> _difficultySelectionEvent = new UnityEvent<EGameDifficulty>();
     private UnityEvent<int> _mythicPlusLevelSelectionEvent = new UnityEvent<int>();
+    private UnityEvent<EGameDifficulty> _difficultyHoveredOverEvent = new UnityEvent<EGameDifficulty>();
+    private UnityEvent<EGameDifficulty> _difficultyNotHoveredOverEvent = new UnityEvent<EGameDifficulty>();
     private UnityEvent _informationUnlockedEvent = new UnityEvent();
 
-    public UnityEvent<MissionModifierSO> _missionModifierSelectionEvent;
-    public UnityEvent<MissionModifierSO> _missionModifierDeselectionEvent;
-    public UnityEvent<MissionModifierSO> _missionModifierSwapEvent;
-    public UnityEvent<MissionModifierSO> _missionModifierHoveredOverEvent;
-    public UnityEvent<MissionModifierSO> _missionModifierNotHoveredOverEvent;
+    private UnityEvent<MissionModifierSO> _missionModifierSelectionEvent = new();
+    private UnityEvent<MissionModifierSO> _missionModifierDeselectionEvent = new();
+    private UnityEvent<MissionModifierSO> _missionModifierSwapEvent = new();
+    private UnityEvent<MissionModifierSO> _missionModifierHoveredOverEvent = new();
+    private UnityEvent<MissionModifierSO> _missionModifierNotHoveredOverEvent = new();
 
     private UnityEvent<HeroSO> _heroSelectionEvent = new UnityEvent<HeroSO>();
     private UnityEvent<HeroSO> _heroDeselectionEvent = new UnityEvent<HeroSO>();
@@ -272,15 +283,18 @@ public class SelectionManager : MainUniversalManagerFramework
     /// Removes the currently selected heroes, boss, level
     /// Difficulty is not reset
     /// </summary>
-    public void ResetSelectionData()
+    public void ResetSelectionData(bool doesResetModifiers)
     {
         _currentSelectedMission = null;
         
         _selectedHeroes = new();
         _selectedBoss = null;
         _selectedLevel = null;
-
-        _currentMissionModifiers.Clear();
+        
+        if (doesResetModifiers)
+        {
+            _currentMissionModifiers.Clear();
+        }
     }
 
     #region BaseManager
@@ -344,6 +358,16 @@ public class SelectionManager : MainUniversalManagerFramework
         _mythicPlusLevelSelectionEvent?.Invoke(level);
     }
 
+    public void InvokeDifficultyHoveredOverEvent(EGameDifficulty eGameDifficulty)
+    {
+        _difficultyHoveredOverEvent?.Invoke(eGameDifficulty);
+    }
+    
+    public void InvokeDifficultyNotHoveredOverEvent(EGameDifficulty eGameDifficulty)
+    {
+        _difficultyNotHoveredOverEvent?.Invoke(eGameDifficulty);
+    }
+    
     public void InvokeInformationUnlockedEvent()
     {
         _informationUnlockedEvent?.Invoke();
@@ -415,9 +439,13 @@ public class SelectionManager : MainUniversalManagerFramework
     public bool AtMaxBossSelected() => !_selectedBoss.IsUnityNull();
 
     public float GetDamageMultiplierFromDifficulty() => _difficultyDamageMultiplierDictionary[_currentEGameDifficulty];
+    public float GetDamageMultiplierFromDifficulty(EGameDifficulty difficulty) => _difficultyDamageMultiplierDictionary[difficulty];
     public float GetSpeedMultiplierFromDifficulty() => _difficultyAttackSpeedMultiplierDictionary[_currentEGameDifficulty];
+    public float GetSpeedMultiplierFromDifficulty(EGameDifficulty difficulty) => _difficultyAttackSpeedMultiplierDictionary[difficulty];
     public float GetHealthMultiplierFromDifficulty() => _difficultyHealthMultiplierDictionary[_currentEGameDifficulty];
-    public float GetStaggerMultiplierFromDifficulty() => _difficultyHealthMultiplierDictionary[_currentEGameDifficulty];
+    public float GetHealthMultiplierFromDifficulty(EGameDifficulty difficulty) => _difficultyHealthMultiplierDictionary[difficulty];
+    public float GetStaggerMultiplierFromDifficulty() => _difficultyStaggerMultiplierDictionary[_currentEGameDifficulty];
+    public float GetStaggerMultiplierFromDifficulty(EGameDifficulty difficulty) => _difficultyStaggerMultiplierDictionary[difficulty];
 
     public float GetDamageMultiplierFromMythicPlusLevel()
     {
@@ -480,12 +508,52 @@ public class SelectionManager : MainUniversalManagerFramework
     }
     
     public int GetHeroLimitFromDifficulty() => _difficultyHeroLimit[_currentEGameDifficulty];
+    public int GetHeroLimitFromDifficulty(EGameDifficulty difficulty) => _difficultyHeroLimit[difficulty];
 
+    public string GetDifficultyNameFromDifficulty(EGameDifficulty difficulty) => _difficultyNames[(int)difficulty-1];
     public List<string> GetDifficultyNames() => _difficultyNames;
     public List<Sprite> GetDifficultyIcons() => _difficultyIcons;
     public Sprite GetDifficultyIconOfCurrentDifficulty() => GetDifficultyIconFromDifficulty(_currentEGameDifficulty);
     public Sprite GetDifficultyIconFromDifficulty(EGameDifficulty difficulty) => GetDifficultyIconFromDifficulty((int)difficulty);
     public Sprite GetDifficultyIconFromDifficulty(int difficulty) => _difficultyIcons[difficulty-1];
+    public Color GetDifficultyColorFromDifficulty(EGameDifficulty difficulty) => _difficultyColors[(int)difficulty-1];
+    
+    public Color GetBasicAbilityColor() => _basicAbilityColor;
+    public Color GetManualAbilityColor() => _manualAbilityColor;
+    public Color GetPassiveAbilityColor() => _passiveAbilityColor;
+    public Color GetHybridAbilityColor() => _hybridAbilityColor;
+
+    public Color GetBossAbilityColorFromEnum(EBossAbilityType bossAbilityType)
+    {
+        switch (bossAbilityType)
+        {
+            case(EBossAbilityType.Active):
+                return _manualAbilityColor;
+            case(EBossAbilityType.Passive):
+                return _passiveAbilityColor;
+            case(EBossAbilityType.Hybrid):
+                return _hybridAbilityColor;
+            default:
+                return Color.white;
+        }
+    }
+    
+    public Color GetHeroAbilityColorFromEnum(EHeroAbilityType heroAbilityType)
+    {
+        switch (heroAbilityType)
+        {
+            case(EHeroAbilityType.Basic):
+                return _basicAbilityColor;
+            case(EHeroAbilityType.Manual):
+                return _manualAbilityColor;
+            case(EHeroAbilityType.Passive):
+                return _passiveAbilityColor;
+            default:
+                return Color.white;
+        }
+    }
+
+    public Color GetMissionModifierColor() => _missionModifierColor;
     
     public List<MissionModifierSO> GetCurrentMissionModifiers() => _currentMissionModifiers;
     public int GetMissionModifierCount() => _currentMissionModifiers.Count;
@@ -608,6 +676,8 @@ public class SelectionManager : MainUniversalManagerFramework
     
     public UnityEvent<EGameDifficulty> GetDifficultySelectionEvent() => _difficultySelectionEvent;
     public UnityEvent<int> GetMythicPlusLevelSelectionEvent() => _mythicPlusLevelSelectionEvent;
+    public UnityEvent<EGameDifficulty> GetDifficultyHoveredOverEvent() => _difficultyHoveredOverEvent;
+    public UnityEvent<EGameDifficulty> GetDifficultyNotHoveredOverEvent() => _difficultyNotHoveredOverEvent;
     public UnityEvent GetInformationUnlockedEvent() => _informationUnlockedEvent;
 
     public UnityEvent<MissionModifierSO> GetMissionModifierSelectionEvent() => _missionModifierSelectionEvent;
