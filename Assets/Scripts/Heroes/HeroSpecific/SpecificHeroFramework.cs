@@ -372,6 +372,8 @@ public abstract class SpecificHeroFramework : MonoBehaviour
     {
         damage *= _myHeroBase.GetHeroStats().GetCurrentDamageMultiplier();
 
+        damage = BossStats.Instance.DealDamageToBoss(damage);
+
         var heroSO = _myHeroBase.GetHeroSO();
 
         MeterEventDetails details = new()
@@ -384,6 +386,8 @@ public abstract class SpecificHeroFramework : MonoBehaviour
         BossStats.Instance.DealDamageToBossDetailed(details);
 
         _myHeroBase.InvokeHeroDealtDamageEvent(damage);
+        
+        _myHeroBase.GetHeroStats().AddToTotalHeroDamageDealt(damage);
     }
 
     /// <summary>
@@ -393,6 +397,8 @@ public abstract class SpecificHeroFramework : MonoBehaviour
     public virtual void StaggerBoss(float stagger)
     {
         stagger *= _myHeroBase.GetHeroStats().GetCurrentStaggerMultiplier();
+
+        stagger = BossStats.Instance.DealStaggerToBoss(stagger);
 
         var heroSO = _myHeroBase.GetHeroSO();
 
@@ -407,7 +413,8 @@ public abstract class SpecificHeroFramework : MonoBehaviour
         BossStats.Instance.DealStaggerToBossDetailed(details);
 
         _myHeroBase.InvokeHeroDealtStaggerEvent(stagger);
-        
+
+        _myHeroBase.GetHeroStats().AddToTotalHeroStaggerDealt(stagger);
     }
 
     /// <summary>
@@ -424,6 +431,8 @@ public abstract class SpecificHeroFramework : MonoBehaviour
 
         float actualHealAmount = Mathf.Min(healing, targetStats.GetMaxHealth() - targetStats.GetCurrentHealth());
 
+        healing = target.GetHeroStats().HealHero(healing);
+
         MeterEventDetails details = new()
         {
             dealerName = so.GetHeroName(),
@@ -432,8 +441,8 @@ public abstract class SpecificHeroFramework : MonoBehaviour
         };
 
         HeroesManager.Instance.InvokeOnHeroHealedEventDetailed(details);
-
-        target.GetHeroStats().HealHero(healing);
+        
+        _myHeroBase.GetHeroStats().AddToTotalHeroHealingDealt(healing);
     }
 
     #endregion
