@@ -10,8 +10,6 @@ public class DebugScript : MonoBehaviour
 {
     public static DebugScript Instance;
     
-    internal bool IsEditor = false;
-    
     public bool RequiresMaxCharactersSelected;
     public bool ShowAchievementUnlocks;
     
@@ -27,14 +25,20 @@ public class DebugScript : MonoBehaviour
         {
             Destroy(gameObject);
         }
-        
-#if !UNITY_EDITOR && !DEVELOPMENT_BUILD
-        IsEditor = true;
-        RequiresMaxCharactersSelected = true;
-#endif
+    }
+
+    public void ManagerSetUpComplete()
+    {
+        SubscribeToEvents();
     }
 
 #if UNITY_EDITOR
+
+    [SerializeField] private GameObject _heroStatTrackingObject;
+    private bool _isSubscribeToGameplayEvents = false;
+    
+    
+    
     // Update is called once per frame
     void Update()
     {
@@ -123,6 +127,57 @@ public class DebugScript : MonoBehaviour
         {
             SaveManager.Instance.UnlockNextMythicPlusLevel();
         }
+
+        if (Input.GetKeyDown(KeyCode.M))
+        {
+            DisplayTrackingHeroStats();
+        }
+    }
+
+    private void BattleStart()
+    {
+        
+    }
+
+    private void DisplayTrackingHeroStats()
+    {
+        Instantiate(_heroStatTrackingObject,Vector3.zero,Quaternion.identity);
+    }
+
+    private void SubscribeToEvents()
+    {
+        SceneLoadManager.Instance.GetOnGameplaySceneLoaded().AddListener(GameplaySceneLoaded);
+        SceneLoadManager.Instance.GetOnStartOfSceneLoad().AddListener(UnsubscribeFromGameplayEvents);
+    }
+
+    private void GameplaySceneLoaded()
+    {
+        SubscribeToGameplayEvents();
+    }
+
+    
+    private void SubscribeToGameplayEvents()
+    {
+        if (_isSubscribeToGameplayEvents)
+        {
+            return;
+        }
+        
+        GameStateManager.Instance.GetStartOfBattleEvent().AddListener(BattleStart);
+        
+        _isSubscribeToGameplayEvents = true;
+    }
+
+    private void UnsubscribeFromGameplayEvents()
+    {
+        if (!_isSubscribeToGameplayEvents)
+        {
+            return;
+        }
+        
+        GameStateManager.Instance.GetStartOfBattleEvent().RemoveListener(BattleStart);
+
+        _isSubscribeToGameplayEvents = false;
     }
 #endif
 }
