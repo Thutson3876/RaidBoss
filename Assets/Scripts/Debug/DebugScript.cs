@@ -32,7 +32,7 @@ public class DebugScript : MonoBehaviour
         SubscribeToEvents();
     }
 
-#if UNITY_EDITOR
+
 
     [SerializeField] private GameObject _heroStatTrackingObject;
     private bool _isSubscribeToGameplayEvents = false;
@@ -42,7 +42,8 @@ public class DebugScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(Input.GetKeyDown(KeyCode.Plus) || Input.GetKeyDown(KeyCode.Equals))
+        #if UNITY_EDITOR
+        if (Input.GetKeyDown(KeyCode.Plus) || Input.GetKeyDown(KeyCode.Equals))
         {
             SaveManager.Instance.UnlockNextMissions();
         }
@@ -132,6 +133,8 @@ public class DebugScript : MonoBehaviour
         {
             DisplayTrackingHeroStats();
         }
+
+        #endif
     }
 
     private void BattleStart()
@@ -179,6 +182,6 @@ public class DebugScript : MonoBehaviour
 
         _isSubscribeToGameplayEvents = false;
     }
-#endif
+
 }
 
