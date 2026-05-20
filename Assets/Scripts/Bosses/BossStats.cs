@@ -469,12 +469,7 @@ public class BossStats : BossChildrenFunctionality
             return;
         }
 
-        details.amount /= _bossDamageResistanceMultiplier;
-        _currentHealth -= details.amount;
-        _myBossBase.InvokeBossDamagedEvent(details.amount);
         _myBossBase.InvokeBossDamagedEventDetailed(details);
-
-        AudioManager.Instance.PlaySpecificAudio(AudioManager.Instance.GeneralBossAudio.HealthStaggerAudio.BossTookDamage);
 
     }
     
@@ -516,8 +511,6 @@ public class BossStats : BossChildrenFunctionality
             return;
         }
 
-        _currentStaggerCounter += details.amount;
-        _myBossBase.InvokeBossStaggerDealt(details.amount);
         _myBossBase.InvokeBossStaggerDealtEventDetailed(details);
 
         CheckIfBossIsStaggered();

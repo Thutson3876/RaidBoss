@@ -409,7 +409,6 @@ public abstract class SpecificHeroFramework : MonoBehaviour
             dealerColor = heroSO.GetHeroUIColor(),
         };
 
-        BossStats.Instance.DealStaggerToBoss(stagger);
         BossStats.Instance.DealStaggerToBossDetailed(details);
 
         _myHeroBase.InvokeHeroDealtStaggerEvent(stagger);
