@@ -700,9 +700,8 @@ public class SelectionController : MonoBehaviour
         AttemptDisplayHeroInformation(heroSO);
     }
 
-    private void HeroNotHoveredOver(HeroSO heroSO)
+    public void HeroNotHoveredOver(HeroSO heroSO)
     {
-        
         if (SelectionManager.Instance.GetAllSelectedHeroes().Contains(heroSO))
         {
             return;
@@ -931,7 +930,7 @@ public class SelectionController : MonoBehaviour
             {
                 heroesToRemove.Add(SelectionManager.Instance.GetAllSelectedHeroes()[i]);
             }
-
+            
             MoveHeroPillar(i, false);
 
         }
@@ -986,6 +985,9 @@ public class SelectionController : MonoBehaviour
         if (heroPillarNum > 0 &&
             heroPillarNum < SelectionManager.Instance.GetMaxHeroesCountWithCurrentDifficulty())
         {
+            // Shows the pillar preview just to be certain that it is properly displayed
+            // Prevents situations of the pillar moving down and not showing the preview
+            _heroPillars[heroPillarNum].ShowPreviewPillar(true);
             MoveHeroPillar(heroPillarNum, false);
         }
 
@@ -1049,12 +1051,18 @@ public class SelectionController : MonoBehaviour
 
     private void MoveNextHeroBackToCurrentPillar(int pillarNum)
     {
-        if (pillarNum + 1 >= SelectionManager.Instance.GetMaxHeroesCountWithCurrentDifficulty()) return;
-
-        if(!_heroPillars[pillarNum].HasStoredHero() && _heroPillars[pillarNum+1].HasStoredHero())
+        if (pillarNum + 1 >= SelectionManager.Instance.GetMaxHeroesCountWithCurrentDifficulty())
         {
-            _heroPillars[pillarNum].ShowHeroOnPillar(_heroPillars[pillarNum + 1].GetStoredHero(),true, true);
+            return;
+        }
+        
+        if(!_heroPillars[pillarNum].HasHeroSelectedOnPillar() && _heroPillars[pillarNum+1].HasHeroSelectedOnPillar())
+        {
+            _heroPillars[pillarNum].ShowHeroOnPillar(_heroPillars[pillarNum + 1].GetStoredHero(),false, true,false);
+            _heroPillars[pillarNum].PlayHeroHoverAnimation();
+            
             _heroPillars[pillarNum + 1].RemoveHeroOnPillar();
+            _heroPillars[pillarNum + 1].DestroyHeroSelectedOnPillar();
         }
         MoveNextHeroBackToCurrentPillar(pillarNum + 1);
         
@@ -1146,7 +1154,6 @@ public class SelectionController : MonoBehaviour
             selectHeroButton.SetBestDifficultyBeatenIcon(bossSO);
         }
     }
-    
     
     #endregion
     

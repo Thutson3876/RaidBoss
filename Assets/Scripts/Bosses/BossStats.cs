@@ -50,6 +50,7 @@ public class BossStats : BossChildrenFunctionality
     private bool _hasEnrageImpendingBegun = false;
 
     private float _bossEnragedWarningProgress = 0;
+    private bool _canProgressBossEnrage = true;
 
     #region Set Up
     /// <summary>
@@ -516,8 +517,18 @@ public class BossStats : BossChildrenFunctionality
         CheckIfBossIsStaggered();
     }
     
+    public void DealStaggerRequiredToStaggerBoss()
+    {
+        DealStaggerToBoss(_bossDefaultStaggerMax - _currentStaggerCounter);
+    }
+
     public void DecreaseTimeUntilEnraged(float enrageTime)
     {
+        if (!_canProgressBossEnrage)
+        {
+            return;
+        }
+        
         _currentTimeUntilEnrage -= enrageTime;
         _timeUntilEnrageProgress = 1 - (_currentTimeUntilEnrage / _enrageMaxTime);
         _myBossBase.InvokeBossEnrageProgressUpdatedEvent(_timeUntilEnrageProgress);
@@ -555,5 +566,9 @@ public class BossStats : BossChildrenFunctionality
     public float SetBossMaxHealth(float value) => _bossMaxHealth = value;
     public float SetBossMaxStagger(float value) => _bossDefaultStaggerMax = value;
     public float SetBossDamageResistanceChangeOnStagger(float value) => _bossDamageResistanceChangeOnStagger = value;
+    public void AddBossDamageResistanceChangeOnStagger(float value) => _bossDamageResistanceChangeOnStagger += value;
+    public void MultiplyBossDamageResistanceChangeOnStagger(float value) => _bossDamageResistanceChangeOnStagger *= value;
+    
+    public void SetCanProgressBossEnrage(bool canProgressEnrage) => _canProgressBossEnrage = canProgressEnrage;
     #endregion
 }

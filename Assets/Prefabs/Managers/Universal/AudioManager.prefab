@@ -628,7 +628,13 @@ MonoBehaviour:
       DoesCancelPreviousInstancesOfSpecificAudioOnPlay: 0
       DefaultPlayType: 0
       DefaultAudioChoice: 0
-      AudioTracks: []
+      AudioTracks:
+      - Guid:
+          Data1: -799298830
+          Data2: 1075234962
+          Data3: -406540659
+          Data4: -1560304193
+        Path: event:/SoundEffect/Bosses/Specific/TerraLord/Death/TerraLordDeath
     MiscellaneousBossAudio:
     - AudioName: RubbleFalling
       DefaultInstanceFadeInTime: 0
@@ -1494,13 +1500,19 @@ MonoBehaviour:
           Data4: -412088539
         Path: event:/SoundEffect/Heroes/SpecificHeroes/Chronomancer/Active/ChronomancerRewind
     PassiveAbilityUsed:
-      AudioName: 
+      AudioName: ChronomancerAccelerateStart
       DefaultInstanceFadeInTime: 0
       DefaultInstanceFadeOutTime: 0
       DoesCancelPreviousInstancesOfSpecificAudioOnPlay: 0
       DefaultPlayType: 0
       DefaultAudioChoice: 0
-      AudioTracks: []
+      AudioTracks:
+      - Guid:
+          Data1: -492419332
+          Data2: 1238288000
+          Data3: 510333326
+          Data4: 1462383033
+        Path: event:/SoundEffect/Heroes/SpecificHeroes/Chronomancer/Passive/ChronomancerAccelerateStart
     MiscellaneousHeroAudio: []
   - AssociatedHero: Vampire
     SelectionSelectedAudio:

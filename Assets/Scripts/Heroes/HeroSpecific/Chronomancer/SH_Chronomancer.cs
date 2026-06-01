@@ -346,10 +346,6 @@ public class SH_Chronomancer : SpecificHeroFramework
     #endregion
 
     #region Passive Abilities
-    public override void ActivatePassiveAbilities()
-    {
-        
-    }
 
     /// <summary>
     /// Makes the heroes use their basic attack sooner when affected by the
@@ -366,6 +362,8 @@ public class SH_Chronomancer : SpecificHeroFramework
         
         heroBase.GetSpecificHeroScript().AddToBasicAbilityChargeTime(_passiveAbilityBasicCooldownReduction);
         heroBase.GetSpecificHeroScript().AddToManualAbilityChargeTime(_passiveAbilityManualCooldownReduction);
+        
+        PlayPassiveAbilityAudio();
 
         StartCoroutine(PassiveAttackSpeedIncreaseBuff(heroBase));
     }
@@ -433,12 +431,22 @@ public class SH_Chronomancer : SpecificHeroFramework
     protected override void SubscribeToEvents()
     {
         base.SubscribeToEvents();
+        
+        if (_isSubscribedToEvents)
+        {
+            return;
+        }
         HeroesManager.Instance.GetOnHeroDiedEvent().AddListener(RemoveSpecificHeroValues);
     }
 
     protected override void UnsubscribeFromEvents()
     {
         base.UnsubscribeFromEvents();
+        
+        if (!_isSubscribedToEvents)
+        {
+            return;
+        }
         HeroesManager.Instance.GetOnHeroDiedEvent().RemoveListener(RemoveSpecificHeroValues);
     }
     #endregion

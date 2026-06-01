@@ -29,7 +29,9 @@ public class DebugScript : MonoBehaviour
 
     public void ManagerSetUpComplete()
     {
+#if UNITY_EDITOR
         SubscribeToEvents();
+#endif
     }
 
 

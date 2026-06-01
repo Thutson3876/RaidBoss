@@ -22,6 +22,7 @@ public class SceneLoadManager : MainUniversalManagerFramework
     
     private WaitForSeconds _sceneTransitionWait = new WaitForSeconds(_sceneTransitionTime/2);
 
+    private const int SPLASH_SCREEN_SCENE_ID = -1;
     private const int MAIN_MENU_SCENE_ID = 0;
     private const int MAP_SCENE_SCENE_ID = 1;
     private const int SELECTION_SCENE_ID = 2;
@@ -29,6 +30,7 @@ public class SceneLoadManager : MainUniversalManagerFramework
     private Coroutine _sceneTransitionCoroutine;
 
     private UnityEvent _onStartOfSceneLoad = new UnityEvent();
+    private UnityEvent _onMiddleOfSceneLoad = new UnityEvent();
     private UnityEvent _onEndOfSceneLoad = new UnityEvent();
     
     private UnityEvent _onGameplaySceneLoaded = new UnityEvent();
@@ -108,6 +110,8 @@ public class SceneLoadManager : MainUniversalManagerFramework
         
         AudioManager.Instance.PlaySpecificAudio(
             AudioManager.Instance.UserInterfaceAudio.SceneLoadUserInterfaceAudio.SceneLoadMiddle);
+
+        InvokeOnMiddleOfSceneLoadEvent();
 
         yield return null;
 
@@ -198,6 +202,12 @@ public class SceneLoadManager : MainUniversalManagerFramework
     {
         _onStartOfSceneLoad?.Invoke();
     }
+
+    private void InvokeOnMiddleOfSceneLoadEvent()
+    {
+        _onMiddleOfSceneLoad?.Invoke();
+    }
+    
     private void InvokeOnEndOfSceneLoadEvent()
     {
         _onEndOfSceneLoad?.Invoke();
@@ -217,6 +227,7 @@ public class SceneLoadManager : MainUniversalManagerFramework
     }
     
     public UnityEvent GetOnStartOfSceneLoad() => _onStartOfSceneLoad;
+    public UnityEvent GetOnMiddleOfSceneLoad() => _onMiddleOfSceneLoad;
     public UnityEvent GetOnEndOfSceneLoad() => _onEndOfSceneLoad;
     public UnityEvent GetOnGameplaySceneLoaded() => _onGameplaySceneLoaded;
     #endregion
