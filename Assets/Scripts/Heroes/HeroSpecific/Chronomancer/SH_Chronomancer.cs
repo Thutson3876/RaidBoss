@@ -268,10 +268,19 @@ public class SH_Chronomancer : SpecificHeroFramework
 
     private void ResetStoredHealing()
     {
-        for (int i = 0; i < _highestPastHealthValues.Length; i++)
-        {
-            _highestPastHealthValues[i] = 0;
-        }
+        /*
+         Calculates the stored heal instead of just setting the stored healing to 0, as if healing is reduced there
+         could still be a higher health value.
+         
+         EX: If a hero has 50 health and takes 10 damage down to 40 health. But healing is reduced to 20%, by Sanguine
+         Wrath for example
+         Then Rewind is used. The Hero would only heal 2 health to 42 health. But the highest health value would still
+         be 50. So there is still 8 health remaining left to heal.
+         
+         If there is no healing reduction this should always show 0
+        */
+        
+        CalculateManualHealOfAllHeroes();
     }
 
     /// <summary>
@@ -305,6 +314,14 @@ public class SH_Chronomancer : SpecificHeroFramework
         }
     }
 
+    private void CalculateManualHealOfAllHeroes()
+    {
+        for (int i = 0; i < HeroesManager.Instance.GetCurrentHeroes().Count; i++)
+        {
+            CalculateManualHealOfHero(i);
+        }
+    }
+    
     private void CalculateManualHealOfHero(int heroID)
     {
         HeroBase targetHeroBase = HeroesManager.Instance.GetCurrentHeroes()[heroID];
@@ -335,21 +352,22 @@ public class SH_Chronomancer : SpecificHeroFramework
 
     private void UpdateManualTotalStoredHealing()
     {
+        InvokeOnStoredHealingUpdated(CalculateTotalManualHealing());
+    }
+
+    private float CalculateTotalManualHealing()
+    {
         float total = 0;
         for (int i = 0; i < _highestPastHealthValues.Length; i++)
         {
             total += _highestPastHealthValues[i];
         }
-        InvokeOnStoredHealingUpdated(total);
+        return total;
     }
 
     #endregion
 
     #region Passive Abilities
-    public override void ActivatePassiveAbilities()
-    {
-        
-    }
 
     /// <summary>
     /// Makes the heroes use their basic attack sooner when affected by the
@@ -366,6 +384,8 @@ public class SH_Chronomancer : SpecificHeroFramework
         
         heroBase.GetSpecificHeroScript().AddToBasicAbilityChargeTime(_passiveAbilityBasicCooldownReduction);
         heroBase.GetSpecificHeroScript().AddToManualAbilityChargeTime(_passiveAbilityManualCooldownReduction);
+        
+        PlayPassiveAbilityAudio();
 
         StartCoroutine(PassiveAttackSpeedIncreaseBuff(heroBase));
     }
@@ -433,12 +453,22 @@ public class SH_Chronomancer : SpecificHeroFramework
     protected override void SubscribeToEvents()
     {
         base.SubscribeToEvents();
+        
+        if (_isSubscribedToEvents)
+        {
+            return;
+        }
         HeroesManager.Instance.GetOnHeroDiedEvent().AddListener(RemoveSpecificHeroValues);
     }
 
     protected override void UnsubscribeFromEvents()
     {
         base.UnsubscribeFromEvents();
+        
+        if (!_isSubscribedToEvents)
+        {
+            return;
+        }
         HeroesManager.Instance.GetOnHeroDiedEvent().RemoveListener(RemoveSpecificHeroValues);
     }
     #endregion

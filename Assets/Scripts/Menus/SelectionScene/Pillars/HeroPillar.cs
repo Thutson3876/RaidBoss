@@ -52,16 +52,22 @@ public class HeroPillar : MonoBehaviour
         _pillarAnimator.SetBool(HERO_PILLAR_MOVE_ANIM_BOOL, moveUp);
     }
 
+    public void PillarNoLongerIncludedInHeroDisplay()
+    {
+        MovePillar(false);
+        AnimateOutHeroOnPillar();
+    }
+
     /// <summary>
     /// Displays a hero on the pillar
     /// </summary>
     /// <param name="heroSO"></param>
     public void ShowHeroOnPillar(HeroSO heroSO, bool newHero)
     {
-        ShowHeroOnPillar(heroSO, newHero, false);
+        ShowHeroOnPillar(heroSO, newHero, false,true);
     }
 
-    public void ShowHeroOnPillar(HeroSO heroSO, bool newHero, bool heroAlreadySelectedOverride)
+    public void ShowHeroOnPillar(HeroSO heroSO, bool newHero, bool heroAlreadySelectedOverride, bool canPlayHeroSelectedAnimation)
     {
         //If there is a hero on the pillar remove them
         if (!_currentHeroVisual.IsUnityNull())
@@ -69,15 +75,7 @@ public class HeroPillar : MonoBehaviour
             RemoveHeroOnPillar();
         }
 
-        //Spawn the hero onto the pillar
-        _currentHeroVisual = Instantiate(heroSO.GetHeroPrefab(), _heroSpawnPoint.transform);
-        
-        _heroSpecificAnimator = _currentHeroVisual.GetComponent<Animator>();
-        
-        //Rotates the hero
-        _currentHeroVisual.transform.eulerAngles += new Vector3(0,180,0);
-        //Sets the stored hero
-        _storedHero = heroSO;
+        CreateHeroOnPillar(heroSO);
 
         if (_heroSelectedOnPillar == heroSO || heroAlreadySelectedOverride)
         {
@@ -95,7 +93,7 @@ public class HeroPillar : MonoBehaviour
 
         if (!newHero)
         {
-            HeroSelectedOnPillar();
+            HeroSelectedOnPillar(canPlayHeroSelectedAnimation);
             return;
         }
         
@@ -103,11 +101,27 @@ public class HeroPillar : MonoBehaviour
         _heroSpawnAnimator.ResetTrigger(REMOVE_HERO_ON_PILLAR_ANIM_TRIGGER);
     }
 
-    public void HeroSelectedOnPillar()
+    private void CreateHeroOnPillar(HeroSO heroSO)
+    {
+        //Spawn the hero onto the pillar
+        _currentHeroVisual = Instantiate(heroSO.GetHeroPrefab(), _heroSpawnPoint.transform);
+        
+        _heroSpecificAnimator = _currentHeroVisual.GetComponent<Animator>();
+        
+        //Rotates the hero
+        _currentHeroVisual.transform.eulerAngles += new Vector3(0,180,0);
+        //Sets the stored hero
+        _storedHero = heroSO;
+    }
+
+    public void HeroSelectedOnPillar(bool canPlayHeroSelectedAnimation)
     {
         _heroSelectedOnPillar = _storedHero;
-        
-        StartHeroSelectedAnimation();
+
+        if (canPlayHeroSelectedAnimation)
+        {
+            StartHeroSelectedAnimation();
+        }
         PlayHeroIdleAnimation();
         
         PlayParticlesOfHeroOnPillar();
@@ -136,6 +150,12 @@ public class HeroPillar : MonoBehaviour
         _pillarGlowCurve.StartMovingDownOnCurve();
     }
 
+    public void DestroyHeroSelectedOnPillar()
+    {
+        Destroy(_currentHeroVisual);
+        _heroSelectedOnPillar = null;
+    }
+
     public void DeselectHeroOnPillar()
     {
         if (_storedHero.IsUnityNull())
@@ -151,6 +171,37 @@ public class HeroPillar : MonoBehaviour
         }
     }
 
+    public void HeroOnPillarClicked()
+    {
+        if (_heroSelectedOnPillar.IsUnityNull())
+        {
+            return;
+        }
+        
+        SelectionController.Instance.ForceHeroButtonPressFromID(_storedHero.GetHeroID());
+        SelectionManager.Instance.HeroNotHoveredOver(_storedHero);
+    }
+
+    public void HeroOnPillarHoveredOver()
+    {
+        if (_heroSelectedOnPillar.IsUnityNull())
+        {
+            return;
+        }
+        
+        PlayHeroHoverAnimation();
+    }
+
+    public void HeroOnPillarNotHoveredOver()
+    {
+        if (_storedHero.IsUnityNull())
+        {
+            return;
+        }
+        
+        SelectionManager.Instance.HeroNotHoveredOver(_storedHero);
+    }
+    
     private void PlayParticlesOfHeroOnPillar()
     {
         _selectedHeroParticles.SetStartColor(_storedHero.GetHeroSelectionParticleColors()[0], _storedHero.GetHeroSelectionParticleColors()[1]);
@@ -185,13 +236,11 @@ public class HeroPillar : MonoBehaviour
     
     public void StartHeroSelectedAnimation()
     {
-        //_heroSpecificAnimator.SetTrigger(HERO_SPECIFIC_SELECTED_ANIM_TRIGGER);
         _heroSpecificAnimator.SetTrigger(HeroVisuals.HERO_SPECIFIC_SELECTED_ANIM_TRIGGER);
     }
     
     public void PlayHeroIdleAnimation()
     {
-        //_heroSpecificAnimator.SetBool(HERO_IDLE_ANIM_BOOL,true);
         _heroSpecificAnimator.SetBool(HeroVisuals.HERO_IDLE_ANIM_BOOL,true);
     }
 
@@ -199,7 +248,6 @@ public class HeroPillar : MonoBehaviour
 
     public void ShowPreviewPillar(bool shouldShow)
     {
-        //_previewBase.SetActive(shouldShow);
         _pillarAnimator.SetBool(HERO_PILLAR_PREVIEW_SHOW_ANIM_BOOL, shouldShow);
     }
 
@@ -208,6 +256,7 @@ public class HeroPillar : MonoBehaviour
     #region Getters
     public GameObject GetHeroSpawnPoint() => _heroSpawnPoint;
     public HeroSO GetStoredHero() => _storedHero;
-    public bool HasStoredHero() => _storedHero != null;
+    public bool HasStoredHero() => !_storedHero.IsUnityNull();
+    public bool HasHeroSelectedOnPillar() => !_heroSelectedOnPillar.IsUnityNull();
     #endregion
 }

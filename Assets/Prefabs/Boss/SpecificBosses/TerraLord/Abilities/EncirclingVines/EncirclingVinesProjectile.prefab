@@ -78,7 +78,7 @@ BoxCollider:
   m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 0.45, y: 0.3, z: 2.4}
+  m_Size: {x: 0.5, y: 0.3, z: 2.4}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &5689458550558832625
 GameObject:
@@ -161,6 +161,7 @@ MonoBehaviour:
   _followObject: {fileID: 4953542174275229542}
   _damageArea: {fileID: 42282694769550797}
   _scaleCurve: {fileID: 3069914079884221486}
+  _activeRotation: {fileID: 8929785742948244759}
 --- !u!114 &42282694769550797
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -199,7 +200,7 @@ MonoBehaviour:
   _enterEvent:
     m_PersistentCalls:
       m_Calls: []
-  _stayDamagePerTick: 2
+  _stayDamagePerTick: 2.85
   _stayEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -242,7 +243,19 @@ MonoBehaviour:
       m_Calls: []
   _onFollowObjectMissing:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2621260190841213678}
+        m_TargetAssemblyTypeName: SBP_EncirclingVines, Assembly-CSharp
+        m_MethodName: FollowTargetMissing
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!54 &5958291190454923689
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -302,7 +315,7 @@ BoxCollider:
   m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 0.45, y: 0.3, z: 2.4}
+  m_Size: {x: 0.5, y: 0.3, z: 2.4}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &7120180589289217650
 GameObject:
@@ -347,7 +360,7 @@ BoxCollider:
   m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 0.45, y: 0.3, z: 2.4}
+  m_Size: {x: 0.5, y: 0.3, z: 2.4}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &7146939028576792152
 GameObject:
@@ -437,7 +450,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 5743967164428576690}
   m_Father: {fileID: 6451212835303307803}
@@ -617,7 +630,7 @@ BoxCollider:
   m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 0.45, y: 0.3, z: 2.4}
+  m_Size: {x: 0.5, y: 0.3, z: 2.4}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &1204153903972699365
 PrefabInstance:

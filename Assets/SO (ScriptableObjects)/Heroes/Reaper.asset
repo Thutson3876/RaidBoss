@@ -16,7 +16,7 @@ MonoBehaviour:
   _heroID: 2
   _selectionDisplayScaleMultiplier: 1.4
   _hasUIManager: 1
-  _maxHP: 50
+  _maxHP: 45
   _moveSpeed: 5
   _angularSpeed: 140
   _moveAcceleration: 11
@@ -71,15 +71,15 @@ MonoBehaviour:
     towards
     the Reaper'
   _passiveAbilityName: Rebirth
-  _passiveAbilityDescription: 'The Reaper
+  _passiveAbilityDescription: 'The Reaper persists
 
-    persists after death
+    after being killed
 
-    for a short
-    time'
-  _passiveAbilityWideDescription: 'The Reaper
+    for
+    a short time'
+  _passiveAbilityWideDescription: 'The Reaper persists
 
-    persists after death
+    after being killed
 
     for
     a short time'

@@ -29,7 +29,9 @@ public class DebugScript : MonoBehaviour
 
     public void ManagerSetUpComplete()
     {
+#if UNITY_EDITOR
         SubscribeToEvents();
+#endif
     }
 
 
@@ -134,8 +136,17 @@ public class DebugScript : MonoBehaviour
             DisplayTrackingHeroStats();
         }
 
+        
+        if (Input.GetKeyDown(KeyCode.N))
+        {
+            // Low FPS toggle
+            Application.targetFrameRate = Application.targetFrameRate == 30 ? 500 : 30;
+        }
+        
+        
         #endif
     }
+
 
     private void BattleStart()
     {

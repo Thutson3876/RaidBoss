@@ -49,7 +49,8 @@ public class MapController : MonoBehaviour
     [Space]
     [Header("Camera")]
     [SerializeField] private float _minimumCameraLocation;
-    [SerializeField] private float _maximumCameraLocation;
+    [SerializeField] private float _additionalMaximumCameraLocation;
+    private float _maximumCameraLocation;
     
     [SerializeField] private  float _cameraMissionOffSet;
 
@@ -121,6 +122,7 @@ public class MapController : MonoBehaviour
         SelectionManager.Instance.SetSelectedGameMode(EGameMode.Missions);
 
         CreateMissions();
+        CalculateMaxCameraLocation();
         SelectStartingMission();
         
         CameraStart();
@@ -168,6 +170,12 @@ public class MapController : MonoBehaviour
     {
         //SelectMission(_createdMissions[0]);
     }
+
+    private void CalculateMaxCameraLocation()
+    {
+        _maximumCameraLocation = (SaveManager.Instance.GetMissionsInGame().Length * _missionCreationXIncrease) +
+                                 _additionalMaximumCameraLocation;
+    }
     #endregion
     
     #region MissionSelection
@@ -175,6 +183,11 @@ public class MapController : MonoBehaviour
     public void SelectMission(SelectableMission mission)
     {
         if (mission == _currentlySelectedMission)
+        {
+            return;
+        }
+        
+        if (SceneLoadManager.Instance.IsSceneLoading())
         {
             return;
         }
@@ -232,6 +245,13 @@ public class MapController : MonoBehaviour
     
     public void DeselectSelectedMission()
     {
+        // Prevent deselecting a mission while a scene is loading to prevent loading
+        // into a mission without a mission selected
+        if (SceneLoadManager.Instance.IsSceneLoading())
+        {
+            return;
+        }
+        
         if (_currentlySelectedMission.IsUnityNull())
         {
             return;

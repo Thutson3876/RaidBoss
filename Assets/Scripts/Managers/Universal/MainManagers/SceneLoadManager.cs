@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Events;
@@ -22,13 +23,15 @@ public class SceneLoadManager : MainUniversalManagerFramework
     
     private WaitForSeconds _sceneTransitionWait = new WaitForSeconds(_sceneTransitionTime/2);
 
-    private const int MAIN_MENU_SCENE_ID = 0;
-    private const int MAP_SCENE_SCENE_ID = 1;
-    private const int SELECTION_SCENE_ID = 2;
+    private const int SPLASH_SCREEN_SCENE_ID = 0;
+    private const int MAIN_MENU_SCENE_ID = 1;
+    private const int MAP_SCENE_SCENE_ID = 2;
+    private const int SELECTION_SCENE_ID = 3;
 
     private Coroutine _sceneTransitionCoroutine;
 
     private UnityEvent _onStartOfSceneLoad = new UnityEvent();
+    private UnityEvent _onMiddleOfSceneLoad = new UnityEvent();
     private UnityEvent _onEndOfSceneLoad = new UnityEvent();
     
     private UnityEvent _onGameplaySceneLoaded = new UnityEvent();
@@ -49,6 +52,10 @@ public class SceneLoadManager : MainUniversalManagerFramework
 
     public void LoadSceneByEnum(ELoadableScenes scene)
     {
+        if (!CanLoadScene())
+        {
+            return;
+        }
 
         switch (scene)
         {
@@ -67,16 +74,6 @@ public class SceneLoadManager : MainUniversalManagerFramework
             default:
                 break;
         }
-    }
-
-    /// <summary>
-    /// Returns if a scene load can occur.
-    /// Prevented if scene load is currently in process.
-    /// </summary>
-    /// <returns></returns>
-    private bool CanLoadScene()
-    {
-        return _sceneTransitionCoroutine == null;
     }
 
     private IEnumerator SceneLoadProcess(int id)
@@ -108,6 +105,8 @@ public class SceneLoadManager : MainUniversalManagerFramework
         
         AudioManager.Instance.PlaySpecificAudio(
             AudioManager.Instance.UserInterfaceAudio.SceneLoadUserInterfaceAudio.SceneLoadMiddle);
+
+        InvokeOnMiddleOfSceneLoadEvent();
 
         yield return null;
 
@@ -198,6 +197,12 @@ public class SceneLoadManager : MainUniversalManagerFramework
     {
         _onStartOfSceneLoad?.Invoke();
     }
+
+    private void InvokeOnMiddleOfSceneLoadEvent()
+    {
+        _onMiddleOfSceneLoad?.Invoke();
+    }
+    
     private void InvokeOnEndOfSceneLoadEvent()
     {
         _onEndOfSceneLoad?.Invoke();
@@ -210,6 +215,15 @@ public class SceneLoadManager : MainUniversalManagerFramework
     #endregion
 
     #region Getters
+    /// <summary>
+    /// Returns if a scene load can occur.
+    /// Prevented if scene load is currently in process.
+    /// </summary>
+    /// <returns></returns>
+    public bool CanLoadScene()
+    {
+        return _sceneTransitionCoroutine.IsUnityNull();
+    }
 
     public bool IsSceneLoading()
     {
@@ -217,6 +231,7 @@ public class SceneLoadManager : MainUniversalManagerFramework
     }
     
     public UnityEvent GetOnStartOfSceneLoad() => _onStartOfSceneLoad;
+    public UnityEvent GetOnMiddleOfSceneLoad() => _onMiddleOfSceneLoad;
     public UnityEvent GetOnEndOfSceneLoad() => _onEndOfSceneLoad;
     public UnityEvent GetOnGameplaySceneLoaded() => _onGameplaySceneLoaded;
     #endregion

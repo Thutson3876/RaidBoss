@@ -10,13 +10,9 @@ using UnityEngine;
 public class SH_Fae : SpecificHeroFramework
 {
     [Space]
-    [SerializeField] private List<Vector3> _primaryAttackEulers;
+    [SerializeField] private FaeBasicAttackDirections[] _basicAttackDirections;
     [SerializeField] private float _projectileSpawnDistance;
     [SerializeField] private GameObject _basicProjectile;
-    
-    private List<GeneralHeroDamageArea> _currentBasicProjectiles = new();
-    
-    private const int BASIC_PROJECTILES_PER_ATTACK = 4;
 
     [Space]
     [SerializeField] private float _manualContactDamage;
@@ -28,11 +24,14 @@ public class SH_Fae : SpecificHeroFramework
     [SerializeField] private float _manualSpeedMultiplier;
     [SerializeField] private float _manualWallDistanceRange;
     [SerializeField] private float _manualDamageCooldown;
-    [Range(0,1)][SerializeField] private float _manualBossHoming;
-    [Range(0,1)][SerializeField] private float _manualHeroHitBossHomingLost;
-    [Range(0,1)][SerializeField] private float _manualMinimumBossHoming;
+    [Range(-1,1)][SerializeField] private float _manualBossHoming;
+    [Range(-1,1)][SerializeField] private float _manualHitHeroHomingChange;
+    [Range(-1,1)][SerializeField] private float _manualHitMapBorderHomingChange;
+    [Range(-1,1)][SerializeField] private float _manualHitSpawnedEnvironmentHomingChange;
+    [Range(-1,1)][SerializeField] private float _manualMinimumBossHoming;
     [SerializeField] private float _manualMinimumDotProduct;
     [SerializeField] private Vector3 _manualWallExtents;
+    private WaitForSeconds _manualDamageWait;
     private bool _manualCanDamage = true;
 
     [Space] 
@@ -50,6 +49,8 @@ public class SH_Fae : SpecificHeroFramework
     [SerializeField] private Vector3 _vfxWeaponSpawnEulers;
     [SerializeField] private GameObject _vfxWeapon;
     [SerializeField] private Transform _vfxWeaponSpawnPoint;
+    private WaitForSeconds _vfxSpawnDelayWait;
+    private WaitForSeconds _vfxSpawnRateWait;
 
     [Space]
     [SerializeField] private LayerMask _bounceLayers;
@@ -82,18 +83,16 @@ public class SH_Fae : SpecificHeroFramework
         CreateBasicAttackProjectiles();
     }
 
-    public override bool ConditionsToActivateBasicAbilities()
+    public override bool DoesMeetConditionsToActivateBasicAbilities()
     {
         return true;
     }
 
     protected void CreateBasicAttackProjectiles()
     {
-        _currentBasicProjectiles.Clear();
-        
-        for (int i = 0; i < _primaryAttackEulers.Count; i++)
+        for (int i = 0; i < _basicAttackDirections.Length; i++)
         {
-            GameObject newestProjectile = Instantiate(_basicProjectile, transform.position, Quaternion.Euler(_primaryAttackEulers[i]));
+            GameObject newestProjectile = Instantiate(_basicProjectile, transform.position, Quaternion.Euler(_basicAttackDirections[i].AttackEulers));
             newestProjectile.transform.position += (newestProjectile.transform.forward * _projectileSpawnDistance);
 
             newestProjectile.GetComponent<SHP_FaeBasicProjectile>().SetUpProjectile(_myHeroBase, EHeroAbilityType.Basic);
@@ -103,23 +102,12 @@ public class SH_Fae : SpecificHeroFramework
             //Performs the set up for the damage area so that it knows it's owner
             damageArea.SetUpDamageArea(_myHeroBase);
 
-            _currentBasicProjectiles.Add(damageArea);
-        }
-    }
-
-    public void DisableDamageOfBasicProjectilesSet(GeneralHeroDamageArea ignoreProjectile)
-    {
-        foreach (GeneralHeroDamageArea damageArea in _currentBasicProjectiles)
-        {
-            if (damageArea == ignoreProjectile)
+            if (_basicAttackDirections[i].IsBossDirectionInPositiveX == (_myHeroBase.transform.position.x > 0) ||
+                _basicAttackDirections[i].IsBossDirectionInPositiveZ == (_myHeroBase.transform.position.z > 0))
             {
-                continue;
+                damageArea.ToggleProjectileCollider(false);
             }
-            
-            damageArea.IncreaseDamageMultiplierByAmount(-1);
-            damageArea.IncreaseStaggerMultiplierByAmount(-1);
         }
-        _currentBasicProjectiles.Clear();
     }
 
 
@@ -278,7 +266,7 @@ public class SH_Fae : SpecificHeroFramework
 
     private IEnumerator WeaponVFXSpawnProcess()
     {
-        yield return new WaitForSeconds(_vfxWeaponDelay);
+        yield return _vfxSpawnDelayWait;
 
         while (_isManualAbilityActive)
         {
@@ -290,13 +278,12 @@ public class SH_Fae : SpecificHeroFramework
             Vector3 randomEulerRotation = new Vector3(Random.Range(-_vfxWeaponSpawnEulers.x, _vfxWeaponSpawnEulers.x),
                 Random.Range(-_vfxWeaponSpawnEulers.y, _vfxWeaponSpawnEulers.y),
                 Random.Range(-_vfxWeaponSpawnEulers.z, _vfxWeaponSpawnEulers.z));
-
-            //newestWeaponVFX.transform.rotation = Random.rotation;
+            
             newestWeaponVFX.transform.eulerAngles = randomEulerRotation;
 
             newestWeaponVFX.transform.position += newestWeaponVFX.transform.forward * _vfxWeaponSpawnDistance;
 
-            yield return new WaitForSeconds(_vfxWeaponSpawnRate);
+            yield return _vfxSpawnRateWait;
         }
     }
 
@@ -329,8 +316,15 @@ public class SH_Fae : SpecificHeroFramework
             }
             else if (ManualHitHero(rayHit))
             {
-                _currentManualBossHoming -= _manualHeroHitBossHomingLost;
-                _currentManualBossHoming = Mathf.Clamp(_currentManualBossHoming, _manualMinimumBossHoming, _manualBossHoming);
+                ChangeCurrentManualHoming(_manualHitHeroHomingChange);
+            }
+            else if (ManualHitMapBorder(rayHit))
+            {
+                ChangeCurrentManualHoming(_manualHitMapBorderHomingChange);
+            }
+            else if (ManualHitSpawnedEnvironment(rayHit))
+            {
+                ChangeCurrentManualHoming(_manualHitSpawnedEnvironmentHomingChange);
             }
             
             Vector3 directionToBoss = ManualDirectionToBoss();
@@ -344,8 +338,14 @@ public class SH_Fae : SpecificHeroFramework
 
     private Vector3 ManualDirectionToBoss()
     {
-        return  Vector3.Lerp(_currentManualDirection, 
-            BossManager.Instance.GetDirectionToBoss(transform.position), _manualBossHoming).normalized;
+        return  Vector3.LerpUnclamped(_currentManualDirection, 
+            BossManager.Instance.GetDirectionToBoss(transform.position), _currentManualBossHoming).normalized;
+    }
+
+    private void ChangeCurrentManualHoming(float changeAmount)
+    {
+        _currentManualBossHoming += changeAmount;
+        _currentManualBossHoming = Mathf.Clamp(_currentManualBossHoming, _manualMinimumBossHoming, _manualBossHoming);
     }
 
     /// <summary>
@@ -355,7 +355,7 @@ public class SH_Fae : SpecificHeroFramework
     private IEnumerator ManualDamageCooldown()
     {
         _manualCanDamage = false;
-        yield return new WaitForSeconds(_manualDamageCooldown);
+        yield return _manualDamageWait;
         _manualCanDamage = true;
     }
 
@@ -367,6 +367,16 @@ public class SH_Fae : SpecificHeroFramework
     private bool ManualHitHero(RaycastHit rayHit)
     {
         return TagStringData.DoesColliderBelongToHero(rayHit.collider);
+    }
+
+    private bool ManualHitMapBorder(RaycastHit rayHit)
+    {
+        return TagStringData.DoesColliderBelongToMapBorder(rayHit.collider);
+    }
+
+    private bool ManualHitSpawnedEnvironment(RaycastHit rayHit)
+    {
+        return TagStringData.DoesColliderBelongToSpawnedEnvironment(rayHit.collider);
     }
     #endregion
 
@@ -434,10 +444,11 @@ public class SH_Fae : SpecificHeroFramework
     public override void SetUpSpecificHero(HeroBase heroBase, HeroSO heroSO)
     {
         _heroStats = heroBase.GetHeroStats();
-        
-        _manualAudioWaitInterval = new WaitForSeconds(_manualAudioInterval);
 
-        _currentBasicProjectiles = new List<GeneralHeroDamageArea>(4);
+        _manualDamageWait = new WaitForSeconds(_manualDamageCooldown);
+        _manualAudioWaitInterval = new WaitForSeconds(_manualAudioInterval);
+        _vfxSpawnDelayWait = new WaitForSeconds(_vfxWeaponDelay);
+        _vfxSpawnRateWait = new WaitForSeconds(_vfxWeaponSpawnRate);
 
         _startingPassiveBasicAttackSpeed = _currentPassiveBasicAttackSpeed;
 
@@ -462,4 +473,12 @@ public class SH_Fae : SpecificHeroFramework
         _heroStats.GetCurrentSpeed() * _manualSpeedMultiplier * _currentAccelerationMultiplier;
 
     #endregion
+}
+
+[System.Serializable]
+public class FaeBasicAttackDirections
+{
+    public Vector3 AttackEulers;
+    public bool IsBossDirectionInPositiveX;
+    public bool IsBossDirectionInPositiveZ;
 }

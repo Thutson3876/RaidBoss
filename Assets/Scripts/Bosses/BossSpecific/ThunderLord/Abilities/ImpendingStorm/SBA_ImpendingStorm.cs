@@ -45,6 +45,7 @@ public class SBA_ImpendingStorm : SpecificBossAbilityFramework
     [Space]
     [SerializeField] private GameObject _impendingStormTargetZone;
     [SerializeField] private GameObject _impendingStormProjectile;
+    [SerializeField] private SBA_Overcharge _overchargeAbility;
     private BossTargetZoneParent _currentImpendingStormTargetZone;
     
     private Coroutine _rotationCoroutine;
@@ -177,7 +178,23 @@ public class SBA_ImpendingStorm : SpecificBossAbilityFramework
     
     private void UpdateTargetZone()
     {
+        if (!CheckForTargetZone())
+        {
+            return;
+        }
+        
         _currentImpendingStormTargetZone.transform.eulerAngles = new Vector3(0, _attackRotation, 0);
+    }
+
+    private bool CheckForTargetZone()
+    {
+        if (_currentImpendingStormTargetZone.IsUnityNull())
+        {
+            StopImpendingStorm();
+            return false;
+        }
+
+        return true;
     }
     
     private void StartImpendingStormAttack()
@@ -262,12 +279,18 @@ public class SBA_ImpendingStorm : SpecificBossAbilityFramework
 
     private void BossNoLongerStaggered()
     {
+        if (GameStateManager.Instance.GetIsFightOver())
+        {
+            return;
+        }
         StartImpendingStormAttack();
     }
 
     private void BattleOver()
     {
         StopImpendingStorm();
+        
+        _overchargeAbility.StopBossAbility();
         _currentImpendingStormTargetZone.RemoveBossTargetZones();
     }
 
