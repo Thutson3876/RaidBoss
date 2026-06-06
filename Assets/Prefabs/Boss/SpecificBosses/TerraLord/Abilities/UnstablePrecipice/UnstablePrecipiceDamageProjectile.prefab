@@ -179,7 +179,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _screenShakeData:
-    Intensity: 0.6
+    Intensity: 0.5
     Frequency: 0.005
     Duration: 0.45
 --- !u!114 &4049376346948604450
@@ -237,7 +237,7 @@ MonoBehaviour:
       m_Calls: []
   _canPreventReHitWithoutInitialDamage: 0
   _preventReHitDuration: 1
-  _enterDamage: 3.75
+  _enterDamage: 4.75
   _enterEvent:
     m_PersistentCalls:
       m_Calls: []

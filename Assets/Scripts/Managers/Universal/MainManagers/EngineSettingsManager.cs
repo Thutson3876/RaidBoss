@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class EngineSettingsManager : MainUniversalManagerFramework
@@ -11,6 +13,8 @@ public class EngineSettingsManager : MainUniversalManagerFramework
 
     [Space] 
     [SerializeField] private Vector2Int[] _gameResolutions;
+
+    private Vector2Int _displayResolution;
     
     #region Cursor
 
@@ -68,8 +72,20 @@ public class EngineSettingsManager : MainUniversalManagerFramework
     public void SetScreenResolution(Vector2Int resolution)
     {
         Screen.SetResolution(resolution.x, resolution.y, Screen.fullScreen);
+        UpdateCurrentScreenResolution();
     }
+
+    private void UpdateCurrentScreenResolution()
+    {
+        _displayResolution = GetDisplayResolution();
+    }
+    #endregion
     
+    #region Full Screen
+    public void ToggleFullScreen(bool isFullScreen)
+    {
+        Screen.fullScreen = isFullScreen;
+    }
     #endregion
     
     #region BaseManager
@@ -84,11 +100,20 @@ public class EngineSettingsManager : MainUniversalManagerFramework
         base.SetUpMainManager();
         SetCursorToDefault();
         SetResolutionToDefault();
+        UpdateCurrentScreenResolution();
     }
     #endregion
     
     #region Getters
-    public Vector2Int GetCurrentResolution() => new Vector2Int(Screen.currentResolution.width, Screen.currentResolution.height);
+    public Vector2Int GetCurrentDisplayResolution() => _displayResolution;
+    public Vector2Int GetDisplayResolution() => new Vector2Int(Display.main.systemWidth, Display.main.systemHeight);
+    public bool GetIsResolutionCompatibleWithCurrentScreenResolution(int resolutionID) => GetIsResolutionCompatibleWithCurrentScreenResolution(_gameResolutions[resolutionID]);
+
+    public bool GetIsResolutionCompatibleWithCurrentScreenResolution(Vector2Int resolution)
+    {
+        return _displayResolution.x >= resolution.x && _displayResolution.y >= resolution.y;
+    }
+    public Vector2Int GetCurrentResolution() => new Vector2Int(Screen.width, Screen.height);
     public Vector2Int[] GetGameResolutions() => _gameResolutions;
 
     public int GetResolutionIDFromCurrentResolution() => GetResolutionIDFromResolution(GetCurrentResolution());

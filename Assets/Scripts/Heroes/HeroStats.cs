@@ -65,9 +65,7 @@ public class HeroStats : HeroChildrenFunctionality
         SetUpCurrentStats();
 
         //Sets up the movement speed
-        _myHeroBase.GetPathfinding().GetNavMeshAgent().speed = _currentMoveSpeed ;
-        _myHeroBase.GetPathfinding().GetNavMeshAgent().angularSpeed = _currentAngularSpeed ;
-        _myHeroBase.GetPathfinding().GetNavMeshAgent().acceleration = _currentAcceleration;
+        _myHeroBase.GetPathfinding().SetUpMovement(_currentMoveSpeed,_currentAngularSpeed,_currentAcceleration);
     }
 
     #region Stats Set Up
@@ -219,11 +217,14 @@ public class HeroStats : HeroChildrenFunctionality
         HeroesManager.Instance.HeroDied(_myHeroBase);
     }
 
-    public void ForceKillHero()
+    public void ForceKillHero(bool doesCallHeroManager)
     {
         _myHeroBase.InvokeHeroDiedEvent();
-        
-        HeroesManager.Instance.HeroDied(_myHeroBase);
+
+        if (doesCallHeroManager)
+        {
+            HeroesManager.Instance.HeroDied(_myHeroBase);
+        }
     }
 
     private void SetPreviousHealthValue()

@@ -232,6 +232,10 @@ public abstract class SpecificBossFramework : MonoBehaviour
 
             if (randomWeightValue <= currentWeightProgress)
             {
+                if (hb.IsUnityNull())
+                {
+                    Debug.Log("Could not determine hero target");
+                }
                 return hb;
             }
         }
@@ -573,6 +577,7 @@ public abstract class SpecificBossFramework : MonoBehaviour
 
     }
 
+    #region Battle Over
     /// <summary>
     /// Called when the boss is killed
     /// </summary>
@@ -582,6 +587,8 @@ public abstract class SpecificBossFramework : MonoBehaviour
 
         AttemptPlaySpecificBossDiedAudio();
         CheckToUnlockSpecialistAchievement();
+
+        GeneralBattleEnd();
     }
 
     protected virtual void AttemptPlaySpecificBossDiedAudio()
@@ -622,6 +629,18 @@ public abstract class SpecificBossFramework : MonoBehaviour
         
         AchievementManager.Instance.UnlockAchievement(_myBossBase.GetBossSO().GetAssociatedSpecialistAchievement());
     }
+
+    protected virtual void BossWonBattle()
+    {
+        //StopCurrentAttack();
+        GeneralBattleEnd();
+    }
+
+    protected virtual void GeneralBattleEnd()
+    {
+        
+    }
+    #endregion
 
     /// <summary>
     /// If the boss has an abilities locked it is unlocked under half health
@@ -676,6 +695,7 @@ public abstract class SpecificBossFramework : MonoBehaviour
         //Listens for when the boss uses an ability
         _myBossBase.GetBossAbilityUsedEvent().AddListener(IterateRepetitionCounter);
 
+        GameStateManager.Instance.GetBattleLostEvent().AddListener(BossWonBattle);
         GameStateManager.Instance.GetBattleWonEvent().AddListener(BossDied);
         
         //Listens for when the boss is staggered

@@ -173,6 +173,18 @@ public class SaveManager : MainUniversalManagerFramework
             GSD = JsonUtility.FromJson<GameSaveData>(json);
 
             GSD = JsonConvert.DeserializeObject<GameSaveData>(json);
+
+            if (GSD.GetGameplaySaveData().IsUnityNull())
+            {
+                Debug.Log("Gameplay Settings is missing from Game Save Data");
+                GameplaySettingsMissingOnLoad();
+            }
+            
+            if (GSD.GetGeneralSaveData().IsUnityNull())
+            {
+                Debug.Log("General Settings is missing from Game Save Data");
+                GeneralSettingsMissingOnLoad();
+            }
             
             SelectionManager.Instance.SetSelectedDifficulty((EGameDifficulty)GSD.GetGameplaySaveData().GetCurrentDifficultySelected());
             SelectionManager.Instance.SetSelectedDifficultyAndMythicPlusLevel(
@@ -221,6 +233,16 @@ public class SaveManager : MainUniversalManagerFramework
                 GSD.GetGameplaySaveData().NextMissionID = removalMissions[i] - 1;
             }
         }
+    }
+
+    private void GameplaySettingsMissingOnLoad()
+    {
+        GSD.ResetGameplaySaveData();
+    }
+
+    private void GeneralSettingsMissingOnLoad()
+    {
+        GSD.ResetGeneralSaveData();
     }
     #endregion
 
@@ -447,6 +469,12 @@ public class SaveManager : MainUniversalManagerFramework
 
     public void UnlockMission(MissionSO mission, bool doesUpdateNextMission)
     {
+        if (mission.IsUnityNull())
+        {
+            Debug.LogError("Could not find mission to unlock " + mission.GetMissionName());
+            return;
+        }
+        
         if (!GSD.GetGameplaySaveData().GetMissionsUnlocked().Contains(mission.GetMissionID()))
         {
             GSD.GetGameplaySaveData().GetMissionsUnlocked().Add(mission.GetMissionID());
@@ -469,6 +497,12 @@ public class SaveManager : MainUniversalManagerFramework
 
     public void MissionComplete(MissionSO mission)
     {
+        if (mission.IsUnityNull())
+        {
+            Debug.LogError("Could not find mission to complete " + mission.GetMissionName());
+            return;
+        }
+        
         AddMissionAsComplete(mission);
 
         UnlockCharacterFromMission(mission);
@@ -632,6 +666,8 @@ public class SaveManager : MainUniversalManagerFramework
     
     public bool IsMissionUnlocked(MissionSO missionSO) => GSD.GetGameplaySaveData().GetMissionsUnlocked().Contains(missionSO.GetMissionID());
     public bool IsMissionCompleted(MissionSO missionSO) => GSD.GetGameplaySaveData().GetMissionsComplete().Contains(missionSO.GetMissionID());
+    
+    public HashSet<int> GetMissionsComplete() => GSD.GetGameplaySaveData().GetMissionsComplete();
 
     public bool IsCurrentMissionComplete()
     {
@@ -806,7 +842,17 @@ public class GameSaveData
 
     public void ResetGameSaveData()
     {
+        ResetGameplaySaveData();
+        ResetGeneralSaveData();
+    }
+
+    public void ResetGameplaySaveData()
+    {
         _storedGameplaySaveData = new();
+    }
+
+    public void ResetGeneralSaveData()
+    {
         _storedGeneralSaveData = new();
     }
     

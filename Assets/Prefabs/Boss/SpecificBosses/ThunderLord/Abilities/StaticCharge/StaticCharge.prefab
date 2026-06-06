@@ -82,11 +82,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 664fd7f1a9f93a94ca4fe57d1abd9742, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _damageToFollowTargetOnSwap: 4
+  _damageToFollowTargetOnSwap: 5.05
   _maxSwaps: 3
   _enrageMaxSwapIncrease: 1
-  _projectileDuration: 16
+  _projectileDuration: 15
   _enrageDurationIncrease: 8
+  _durationIncreaseOnHeroHit: 2
   _moveIntoHeroTime: 0.2
   _moveOutFromHeroTime: 0.4
   _moveOutColliderEnableDelay: 0.15
@@ -112,6 +113,10 @@ MonoBehaviour:
   _doesResetRotationToDefaultOnEnable: 0
   _doesUseLocalEulerAngles: 0
   _rotationPerSecond: {x: 0, y: 80, z: 0}
+  _rotationAccelerationCurve: {fileID: 0}
+  _doesUseRotateFunction: 0
+  _rotateFunctionRotationsPerSecond: 0
+  _rotateFunctionAxis: {x: 0, y: 0, z: 0}
   _rotationIndepedentParent: {fileID: 0}
   _hasStartRotationOverride: 0
   _startRotationOverride: {x: 0, y: 0, z: 0}
@@ -160,7 +165,7 @@ MonoBehaviour:
         m_CallState: 2
   _canPreventReHitWithoutInitialDamage: 1
   _preventReHitDuration: 1
-  _enterDamage: 1
+  _enterDamage: 1.25
   _enterEvent:
     m_PersistentCalls:
       m_Calls: []
